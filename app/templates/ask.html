@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Ask the Regs — VoltPro Training{% endblock %}
+{% block content %}
+<h1>Ask the Regs</h1>
+<p class="hint">Ask a question about the wiring rules or cable selection and get an answer sourced from the standards themselves.</p>
+
+<div class="regs-caveat">
+  <strong>This is AI-generated guidance, not a compliance ruling.</strong> Answers are drawn
+  from the wiring rules text with page references shown — always verify against the current
+  standard, or check with a licensed supervisor, before relying on it for real work.
+</div>
+
+<form id="ask-form">
+  <textarea id="ask-question" placeholder="e.g. What size earth conductor do I need for a 16mm² active?" required></textarea>
+  <button class="btn-pill" type="submit">Ask</button>
+</form>
+<div id="ask-loading" class="hint" hidden>Checking the wiring rules…</div>
+
+<div id="ask-feed">
+  {% for q in recent %}
+    <div class="regs-qa">
+      <div class="regs-question"><strong>{{ q.user.name }}</strong> asked: {{ q.question }}</div>
+      <div class="regs-answer">{{ q.answer }}</div>
+      {% if q.formatted_citations %}
+        <div class="regs-cites">Source: {{ q.formatted_citations }}</div>
+      {% endif %}
+      <div class="comment-meta">{{ q.created_at.strftime('%d %b %Y %H:%M') }}</div>
+    </div>
+  {% else %}
+    <p class="empty-state">No questions asked yet — be the first.</p>
+  {% endfor %}
+</div>
+
+<script src="{{ url_for('static', filename='js/ask.js') }}"></script>
+{% endblock %}

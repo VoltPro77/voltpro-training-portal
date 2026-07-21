@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Staff Questions — VoltPro Training{% endblock %}
+{% block content %}
+<h1>Staff Questions</h1>
+<p class="hint">Everything staff have asked "Ask the Regs" — useful signal for where the crew's understanding is thin.</p>
+
+{% if not questions %}
+  <p class="empty-state">No questions asked yet.</p>
+{% else %}
+  {% for q in questions %}
+    <div class="regs-qa">
+      <div class="regs-question"><strong>{{ q.user.name }}</strong> asked: {{ q.question }}</div>
+      <div class="regs-answer">{{ q.answer }}</div>
+      {% if q.formatted_citations %}
+        <div class="regs-cites">Source: {{ q.formatted_citations }}</div>
+      {% endif %}
+      <div class="comment-meta">{{ q.created_at.strftime('%d %b %Y %H:%M') }}</div>
+    </div>
+  {% endfor %}
+{% endif %}
+{% endblock %}

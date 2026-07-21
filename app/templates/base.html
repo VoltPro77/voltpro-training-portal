@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}VoltPro Training{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  {% if current_user.is_authenticated %}
+  <header class="site-header">
+    <div class="header-top">
+      <a class="brand" href="{{ url_for('main.catalog') }}">
+        <img src="{{ url_for('static', filename='images/voltpro-logo.jpg') }}" alt="VoltPro">
+        <span class="brand-suffix">Training</span>
+      </a>
+      <div class="header-actions">
+        <a class="user-chip" href="{{ url_for('auth.change_password') }}" title="Change password">{{ current_user.name }}</a>
+        <a class="btn-pill btn-pill-ghost" href="{{ url_for('auth.logout') }}">Log out</a>
+      </div>
+    </div>
+    <nav class="header-nav">
+      <a href="{{ url_for('main.catalog') }}" class="{{ 'active' if request.endpoint == 'main.catalog' or request.endpoint == 'main.video_detail' else '' }}">Catalog</a>
+      <a href="{{ url_for('ask.ask_page') }}" class="{{ 'active' if request.endpoint == 'ask.ask_page' else '' }}">Ask the Regs</a>
+      {% if current_user.is_admin %}
+      <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if request.endpoint == 'admin.dashboard' else '' }}">Dashboard</a>
+      <a href="{{ url_for('admin.staff') }}" class="{{ 'active' if request.endpoint == 'admin.staff' else '' }}">Staff</a>
+      <a href="{{ url_for('admin.questions') }}" class="{{ 'active' if request.endpoint == 'admin.questions' else '' }}">Questions</a>
+      {% endif %}
+    </nav>
+  </header>
+  {% endif %}
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flashes">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

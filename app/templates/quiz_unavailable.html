@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Quiz unavailable — {{ video.title }}{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('main.video_detail', video_id=video.id) }}">&larr; {{ video.title }}</a>
+<h1>Quiz not available yet</h1>
+{% if error %}
+  <p class="hint">The quiz couldn't be generated: {{ error }}</p>
+{% else %}
+  <p class="hint">This video doesn't have a transcript yet, so a quiz can't be generated for it. Run the transcription step of the ingestion script first.</p>
+{% endif %}
+{% endblock %}

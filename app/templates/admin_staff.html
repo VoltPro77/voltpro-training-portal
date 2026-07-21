@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Staff — VoltPro Training{% endblock %}
+{% block content %}
+<h1>Staff Accounts</h1>
+
+<form method="post" class="staff-form">
+  <label>Name <input type="text" name="name" required></label>
+  <label>Username <input type="text" name="username" required></label>
+  <label>Password <input type="text" name="password" required></label>
+  <button type="submit">Add staff</button>
+</form>
+
+<table class="simple-table">
+  <thead><tr><th>Name</th><th>Username</th><th>Created</th><th></th></tr></thead>
+  <tbody>
+    {% for user in staff %}
+    <tr>
+      <td>{{ user.name }}</td>
+      <td>{{ user.username }}</td>
+      <td>{{ user.created_at.strftime('%d %b %Y') }}</td>
+      <td>
+        <form method="post" action="{{ url_for('admin.delete_staff', user_id=user.id) }}"
+              onsubmit="return confirm('Remove {{ user.name }}?');">
+          <button type="submit" class="link-button">Remove</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" class="empty-state">No staff accounts yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

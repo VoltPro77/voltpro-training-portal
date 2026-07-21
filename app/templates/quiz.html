@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Quiz — {{ video.title }}{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('main.video_detail', video_id=video.id) }}">&larr; {{ video.title }}</a>
+<h1>Quiz: {{ video.title }}</h1>
+
+<form id="quiz-form" data-video-id="{{ video.id }}">
+  {% for q in questions %}
+    <fieldset class="quiz-question" data-question-id="{{ q.id }}">
+      <legend>{{ loop.index }}. {{ q.question }}</legend>
+      {% for choice in q.choices %}
+        <label class="quiz-choice">
+          <input type="radio" name="q{{ q.id }}" value="{{ loop.index0 }}" required>
+          {{ choice }}
+        </label>
+      {% endfor %}
+    </fieldset>
+  {% endfor %}
+  <button type="submit">Submit answers</button>
+</form>
+
+<div id="quiz-result" class="quiz-result" hidden></div>
+
+<script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+{% endblock %}

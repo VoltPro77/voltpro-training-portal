@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — VoltPro Training{% endblock %}
+{% block content %}
+<h1>Staff Progress Dashboard</h1>
+
+{% if not staff %}
+  <p class="empty-state">No staff accounts yet. <a href="{{ url_for('admin.staff') }}">Add one</a>.</p>
+{% elif not videos %}
+  <p class="empty-state">No videos have been ingested yet.</p>
+{% else %}
+<div class="table-scroll">
+<table class="matrix">
+  <thead>
+    <tr>
+      <th>Staff</th>
+      <th>Quiz score</th>
+      {% for video in videos %}
+        <th title="{{ video.title }}">{{ video.title }}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in staff %}
+    <tr>
+      <td class="staff-name">{{ user.name }}</td>
+      <td>{{ quiz_scores.get(user.id, "—") }}</td>
+      {% for video in videos %}
+        {% set p = progress_lookup.get((user.id, video.id)) %}
+        <td class="matrix-cell">
+          {% if p and p.completed_at %}
+            <span class="badge badge-done" title="Completed {{ p.completed_at.strftime('%d %b %Y') }}">✓</span>
+          {% elif p and p.percent_complete > 0 %}
+            <span class="badge badge-progress">{{ (p.percent_complete * 100) | round | int }}%</span>
+          {% else %}
+            <span class="badge badge-new">—</span>
+          {% endif %}
+        </td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endif %}
+{% endblock %}
