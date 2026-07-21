@@ -1,0 +1,4 @@
+# Extra dependencies for local tooling scripts only (transcription) — NOT needed to run
+# the web app itself, so NOT installed on Render. Install locally with:
+#   pip install -r requirements.txt -r requirements-local.txt
+faster-whisper==1.2.1
