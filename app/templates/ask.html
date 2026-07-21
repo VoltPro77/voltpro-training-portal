@@ -10,6 +10,15 @@
   standard, or check with a licensed supervisor, before relying on it for real work.
 </div>
 
+{% if documents %}
+<div class="regs-documents">
+  <span class="regs-documents-label">Look it up directly:</span>
+  {% for doc in documents %}
+    <a href="{{ doc.url }}" target="_blank" rel="noopener">{{ doc.label }}</a>
+  {% endfor %}
+</div>
+{% endif %}
+
 <form id="ask-form">
   <textarea id="ask-question" placeholder="e.g. What size earth conductor do I need for a 16mm² active?" required></textarea>
   <button class="btn-pill" type="submit">Ask</button>

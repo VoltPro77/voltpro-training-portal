@@ -2,6 +2,7 @@
 
 Selected via STORAGE_BACKEND env var so switching later needs no application code changes.
 """
+import mimetypes
 import shutil
 from pathlib import Path
 
@@ -51,7 +52,10 @@ class R2Storage:
         )
 
     def save_file(self, local_path, key):
-        self.client.upload_file(str(local_path), self.bucket, key)
+        content_type = mimetypes.guess_type(str(local_path))[0] or "application/octet-stream"
+        self.client.upload_file(
+            str(local_path), self.bucket, key, ExtraArgs={"ContentType": content_type}
+        )
         return key
 
     def url_for(self, key):

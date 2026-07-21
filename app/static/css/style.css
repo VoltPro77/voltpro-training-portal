@@ -357,6 +357,22 @@ video#player {
   color: var(--charcoal);
 }
 
+.regs-documents {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-bottom: 1.75rem;
+  font-size: 0.85rem;
+}
+.regs-documents-label { color: var(--muted); font-weight: 600; }
+.regs-documents a {
+  color: var(--orange-dark);
+  font-weight: 600;
+  text-decoration: none;
+}
+.regs-documents a:hover { text-decoration: underline; }
+
 #ask-form { display: flex; gap: 0.7rem; margin-bottom: 0.75rem; align-items: flex-start; }
 #ask-form textarea { flex: 1; min-height: 2.6rem; resize: vertical; }
 #ask-loading { margin-bottom: 1.5rem; }
