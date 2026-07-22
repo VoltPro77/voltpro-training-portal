@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% block title %}Catalog — VoltPro Training{% endblock %}
+{% block title %}Catalogue — VoltPro Training{% endblock %}
 {% block content %}
-<h1>Training Catalog</h1>
+<h1>Training Catalogue</h1>
 
 {% for category in categories %}
   {% set ready_videos = category.videos | selectattr('is_ready') | list %}

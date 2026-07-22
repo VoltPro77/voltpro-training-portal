@@ -23,8 +23,8 @@
       </div>
     </div>
     <nav class="header-nav">
-      <a href="{{ url_for('main.catalog') }}" class="{{ 'active' if request.endpoint == 'main.catalog' or request.endpoint == 'main.video_detail' else '' }}">Catalog</a>
-      <a href="{{ url_for('ask.ask_page') }}" class="{{ 'active' if request.endpoint == 'ask.ask_page' else '' }}">Ask the Regs</a>
+      <a href="{{ url_for('main.catalog') }}" class="{{ 'active' if request.endpoint == 'main.catalog' or request.endpoint == 'main.video_detail' else '' }}">Catalogue</a>
+      <a href="{{ url_for('ask.ask_page') }}" class="{{ 'active' if request.endpoint == 'ask.ask_page' else '' }}">Regs</a>
       {% if current_user.is_admin %}
       <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if request.endpoint == 'admin.dashboard' else '' }}">Dashboard</a>
       <a href="{{ url_for('admin.staff') }}" class="{{ 'active' if request.endpoint == 'admin.staff' else '' }}">Staff</a>
