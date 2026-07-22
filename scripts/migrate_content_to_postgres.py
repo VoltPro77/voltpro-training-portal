@@ -1,10 +1,17 @@
-"""One-time data migration: copy CONTENT (categories, videos, quiz questions, regulation
-chunks) from the local SQLite dev database to a production Postgres database.
+"""One-time/re-runnable data migration: copy CONTENT (categories, videos, quiz questions,
+regulation chunks) from the local SQLite dev database to a production Postgres database.
 
 Deliberately does NOT touch users, watch progress, comments, quiz attempts, or regulation
 questions — those should start fresh in production (real staff accounts, real activity),
 and re-running this script must never overwrite/duplicate an admin account created with
 whatever real credentials were configured on the production host.
+
+Videos are matched between local and production by drive_source_id (hosted videos) or
+youtube_id (linked videos) — every video has exactly one of the two set. For a video that
+already exists in production, only title/subheading/sort_order/transcript_text are synced
+(so corrections like a typo fix or renumbering propagate); its quiz questions are left
+alone so real staff QuizAttempt history against them is never disturbed. Quiz questions are
+only inserted for videos newly created by this run.
 
 Usage:
     python scripts/migrate_content_to_postgres.py "postgresql://user:pass@host/db"
@@ -16,6 +23,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app import create_app  # noqa: E402
 from app.models import Category, QuizQuestion, RegulationChunk, Video, db  # noqa: E402
+
+
+def video_key(drive_source_id, youtube_id):
+    if drive_source_id:
+        return ("drive", drive_source_id)
+    if youtube_id:
+        return ("youtube", youtube_id)
+    return None
 
 
 def main():
@@ -32,13 +47,22 @@ def main():
         ]
 
         videos_data = []
+        skipped_no_key = 0
         for v in Video.query.all():
+            key = video_key(v.drive_source_id, v.youtube_id)
+            if key is None:
+                skipped_no_key += 1
+                continue
             videos_data.append(
                 {
+                    "key": key,
                     "category_name": v.category.name,
                     "title": v.title,
+                    "subheading": v.subheading,
                     "sort_order": v.sort_order,
                     "storage_key": v.storage_key,
+                    "youtube_id": v.youtube_id,
+                    "source_channel": v.source_channel,
                     "duration_seconds": v.duration_seconds,
                     "drive_source_id": v.drive_source_id,
                     "transcript_text": v.transcript_text,
@@ -63,6 +87,7 @@ def main():
         f"Read {len(categories_data)} categories, {len(videos_data)} videos "
         f"({sum(len(v['quiz_questions']) for v in videos_data)} quiz questions), "
         f"{len(chunks_data)} regulation chunks from local DB."
+        + (f" ({skipped_no_key} local videos skipped: no drive_source_id or youtube_id)" if skipped_no_key else "")
     )
 
     # Write everything to the target (production) DB.
@@ -80,20 +105,34 @@ def main():
         db.session.commit()
         print(f"Categories in place: {len(existing_categories)}")
 
-        existing_videos = {
-            v.drive_source_id: v for v in Video.query.filter(Video.drive_source_id.isnot(None)).all()
-        }
+        existing_videos = {}
+        for v in Video.query.all():
+            key = video_key(v.drive_source_id, v.youtube_id)
+            if key:
+                existing_videos[key] = v
 
-        video_count = 0
+        new_count = 0
+        updated_count = 0
         quiz_count = 0
         for vd in videos_data:
-            if vd["drive_source_id"] in existing_videos:
-                continue  # already migrated, safe to re-run this script
+            existing = existing_videos.get(vd["key"])
+            if existing:
+                existing.title = vd["title"]
+                existing.subheading = vd["subheading"]
+                existing.sort_order = vd["sort_order"]
+                if vd["transcript_text"] and not existing.transcript_text:
+                    existing.transcript_text = vd["transcript_text"]
+                updated_count += 1
+                continue
+
             video = Video(
                 category_id=existing_categories[vd["category_name"]].id,
                 title=vd["title"],
+                subheading=vd["subheading"],
                 sort_order=vd["sort_order"],
                 storage_key=vd["storage_key"],
+                youtube_id=vd["youtube_id"],
+                source_channel=vd["source_channel"],
                 duration_seconds=vd["duration_seconds"],
                 drive_source_id=vd["drive_source_id"],
                 transcript_text=vd["transcript_text"],
@@ -112,10 +151,10 @@ def main():
                     )
                 )
                 quiz_count += 1
-            video_count += 1
+            new_count += 1
 
         db.session.commit()
-        print(f"Videos migrated: {video_count}, quiz questions migrated: {quiz_count}")
+        print(f"Videos: {new_count} new (with {quiz_count} quiz questions), {updated_count} existing updated")
 
         existing_chunk_count = RegulationChunk.query.count()
         if existing_chunk_count == 0:
