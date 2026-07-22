@@ -45,7 +45,9 @@ class Video(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey("category.id"), nullable=False)
     title = db.Column(db.String(255), nullable=False)
     sort_order = db.Column(db.Integer, default=0)  # lower shows first within a category; ties break by title
-    storage_key = db.Column(db.String(500), nullable=True)  # set once ingested
+    storage_key = db.Column(db.String(500), nullable=True)  # set once ingested (hosted videos)
+    youtube_id = db.Column(db.String(20), nullable=True)  # set instead of storage_key for linked YouTube videos
+    source_channel = db.Column(db.String(120), nullable=True)  # attribution for linked videos, e.g. "Electrical How To"
     duration_seconds = db.Column(db.Integer, nullable=True)
     drive_source_id = db.Column(db.String(100), nullable=True)
     transcript_text = db.Column(db.Text, nullable=True)
@@ -60,7 +62,11 @@ class Video(db.Model):
 
     @property
     def is_ready(self):
-        return bool(self.storage_key)
+        return bool(self.storage_key) or bool(self.youtube_id)
+
+    @property
+    def is_external(self):
+        return bool(self.youtube_id)
 
     @property
     def has_quiz(self):

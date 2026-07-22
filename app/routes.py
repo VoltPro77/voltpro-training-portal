@@ -15,6 +15,8 @@ COMPLETE_THRESHOLD = 0.9  # 90% watched counts as "completed" and unlocks the qu
 
 
 def _video_url(video):
+    if video.is_external:
+        return None
     storage = get_storage()
     return storage.url_for(video.storage_key)
 

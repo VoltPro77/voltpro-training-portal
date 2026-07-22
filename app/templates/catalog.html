@@ -13,6 +13,9 @@
         {% set progress = progress_by_video.get(video.id) %}
         <a class="video-card" href="{{ url_for('main.video_detail', video_id=video.id) }}">
           <div class="video-thumb">
+            {% if video.is_external %}
+              <span class="badge badge-external">YouTube</span>
+            {% endif %}
             {% if progress and progress.completed_at %}
               <span class="badge badge-done">Completed</span>
             {% elif progress and progress.percent_complete > 0 %}

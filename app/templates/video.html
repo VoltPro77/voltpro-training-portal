@@ -5,22 +5,44 @@
 <h1>{{ video.title }}</h1>
 <p class="category-label">{{ video.category.name }}</p>
 
-<video id="player" controls preload="metadata"
-       data-video-id="{{ video.id }}"
-       data-resume-seconds="{{ (progress.seconds_watched if progress else 0) }}">
-  <source src="{{ video_url }}" type="video/mp4">
-  Your browser does not support video playback.
-</video>
+{% if video.is_external %}
+  <div class="youtube-embed">
+    <iframe src="https://www.youtube.com/embed/{{ video.youtube_id }}"
+            title="{{ video.title }}" frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+  </div>
+  <p class="youtube-attribution">
+    From the <a href="https://www.youtube.com/watch?v={{ video.youtube_id }}" target="_blank" rel="noopener">{{ video.source_channel or 'source' }}</a>
+    YouTube channel — not filmed by VoltPro.
+  </p>
 
-<div id="progress-status" class="progress-status"></div>
-
-<section class="quiz-cta">
-  {% if quiz_unlocked %}
-    <a class="btn-pill" href="{{ url_for('main.quiz_page', video_id=video.id) }}">Take the quiz</a>
+  {% if progress and progress.completed_at %}
+    <div id="progress-status" class="progress-status">Marked as watched.</div>
   {% else %}
-    <p class="hint">Watch at least 90% of the video to unlock the quiz.</p>
+    <button id="mark-watched-btn" class="btn-pill" data-video-id="{{ video.id }}">Mark as watched</button>
+    <p class="hint">Watched it? Click above to unlock the quiz.</p>
   {% endif %}
+{% else %}
+  <video id="player" controls preload="metadata"
+         data-video-id="{{ video.id }}"
+         data-resume-seconds="{{ (progress.seconds_watched if progress else 0) }}">
+    <source src="{{ video_url }}" type="video/mp4">
+    Your browser does not support video playback.
+  </video>
+
+  <div id="progress-status" class="progress-status"></div>
+{% endif %}
+
+{% if quiz_unlocked %}
+<section class="quiz-cta">
+    <a class="btn-pill" href="{{ url_for('main.quiz_page', video_id=video.id) }}">Take the quiz</a>
 </section>
+{% elif not video.is_external %}
+<section class="quiz-cta">
+    <p class="hint">Watch at least 90% of the video to unlock the quiz.</p>
+</section>
+{% endif %}
 
 <section class="comments">
   <h2>Questions &amp; Comments</h2>

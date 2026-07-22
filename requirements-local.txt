@@ -2,3 +2,4 @@
 # the web app itself, so NOT installed on Render. Install locally with:
 #   pip install -r requirements.txt -r requirements-local.txt
 faster-whisper==1.2.1
+youtube-transcript-api==1.2.4
