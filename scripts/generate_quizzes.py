@@ -42,7 +42,7 @@ def main():
 
             print(f"[{i}/{len(videos)}] Generating quiz: {video.title} ...")
             try:
-                questions = generate_quiz(video.transcript_text)
+                questions = generate_quiz(video.transcript_text, video_title=video.title)
             except Exception as exc:
                 print(f"    FAILED: {exc}")
                 continue

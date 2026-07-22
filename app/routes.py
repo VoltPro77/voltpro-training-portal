@@ -149,7 +149,7 @@ def quiz_page(video_id):
         if not video.transcript_text:
             return render_template("quiz_unavailable.html", video=video)
         try:
-            questions = generate_quiz(video.transcript_text)
+            questions = generate_quiz(video.transcript_text, video_title=video.title)
         except Exception as exc:
             return render_template("quiz_unavailable.html", video=video, error=str(exc))
         for i, q in enumerate(questions):
