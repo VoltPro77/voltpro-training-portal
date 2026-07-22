@@ -1,7 +1,7 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 
-from .models import User, db
+from .models import User, db, now
 
 login_manager = LoginManager()
 login_manager.login_view = "auth.login"
@@ -27,6 +27,8 @@ def login():
         password = request.form.get("password", "")
         user = User.query.filter_by(username=username).first()
         if user and user.check_password(password):
+            user.last_login_at = now()
+            db.session.commit()
             login_user(user)
             return redirect(url_for("main.catalog"))
         flash("Incorrect username or password.", "error")
