@@ -1,7 +1,7 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 
-from .models import User, db, now
+from .models import LoginSession, User, db, now
 
 login_manager = LoginManager()
 login_manager.login_view = "auth.login"
@@ -28,7 +28,10 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and user.check_password(password):
             user.last_login_at = now()
+            login_session = LoginSession(user_id=user.id)
+            db.session.add(login_session)
             db.session.commit()
+            session["login_session_id"] = login_session.id
             login_user(user)
             return redirect(url_for("main.catalog"))
         flash("Incorrect username or password.", "error")
@@ -38,6 +41,12 @@ def login():
 @bp.route("/logout")
 @login_required
 def logout():
+    login_session_id = session.pop("login_session_id", None)
+    if login_session_id:
+        login_session = db.session.get(LoginSession, login_session_id)
+        if login_session:
+            login_session.ended_at = now()
+            db.session.commit()
     logout_user()
     return redirect(url_for("auth.login"))
 

@@ -1,12 +1,15 @@
-from flask import Flask
+from flask import Flask, session
+from flask_login import current_user
 from flask_migrate import Migrate
 
 from . import config
 from .admin import bp as admin_bp
 from .ask import bp as ask_bp
 from .auth import bp as auth_bp, init_login
-from .models import Category, User, db
+from .models import Category, LoginSession, User, db, now
 from .routes import bp as main_bp
+
+LAST_SEEN_UPDATE_INTERVAL_SECONDS = 60
 
 migrate = Migrate()
 
@@ -41,6 +44,20 @@ def create_app():
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(ask_bp)
+
+    @app.before_request
+    def _touch_login_session():
+        if not current_user.is_authenticated:
+            return
+        login_session_id = session.get("login_session_id")
+        if not login_session_id:
+            return
+        login_session = db.session.get(LoginSession, login_session_id)
+        if not login_session or login_session.ended_at is not None:
+            return
+        if (now() - login_session.last_seen_at).total_seconds() > LAST_SEEN_UPDATE_INTERVAL_SECONDS:
+            login_session.last_seen_at = now()
+            db.session.commit()
 
     # Schema is owned by Alembic migrations (see migrations/), not created here — this
     # keeps `flask db ...` commands safe to run against a database with no tables yet.

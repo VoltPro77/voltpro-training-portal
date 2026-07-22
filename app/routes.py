@@ -1,4 +1,5 @@
 import json
+from collections import OrderedDict
 from datetime import datetime, timezone
 
 from flask import Blueprint, abort, jsonify, render_template, request, send_from_directory
@@ -29,8 +30,25 @@ def catalog():
         p.video_id: p
         for p in WatchProgress.query.filter_by(user_id=current_user.id).all()
     }
+
+    # Videos without a subheading show directly under the category; videos that share a
+    # subheading (mirroring a Google Drive subfolder) are grouped under it, subheadings
+    # ordered by first appearance in sort_order.
+    category_groups = {}
+    for category in categories:
+        ready = [v for v in category.videos if v.is_ready]
+        ungrouped = [v for v in ready if not v.subheading]
+        groups = OrderedDict()
+        for v in ready:
+            if v.subheading:
+                groups.setdefault(v.subheading, []).append(v)
+        category_groups[category.id] = {"ungrouped": ungrouped, "groups": groups}
+
     return render_template(
-        "catalog.html", categories=categories, progress_by_video=progress_by_video
+        "catalog.html",
+        categories=categories,
+        progress_by_video=progress_by_video,
+        category_groups=category_groups,
     )
 
 

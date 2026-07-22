@@ -247,6 +247,14 @@ input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 1.1rem;
 }
+.video-grid + .subheading { margin-top: 1.75rem; }
+
+.subheading {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin-bottom: 0.85rem;
+}
 
 .video-card {
   background: var(--card);

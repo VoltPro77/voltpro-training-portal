@@ -11,7 +11,7 @@
 </form>
 
 <table class="simple-table">
-  <thead><tr><th>Name</th><th>Username</th><th>Created</th><th>Last login</th><th></th></tr></thead>
+  <thead><tr><th>Name</th><th>Username</th><th>Created</th><th>Last login</th><th>Last session</th><th></th></tr></thead>
   <tbody>
     {% for user in staff %}
     <tr>
@@ -19,6 +19,7 @@
       <td>{{ user.username }}</td>
       <td>{{ user.created_at.strftime('%d %b %Y') }}</td>
       <td>{{ user.last_login_at.strftime('%d %b %Y %H:%M') if user.last_login_at else 'Never' }}</td>
+      <td>{{ last_session_duration.get(user.id, '—') }}</td>
       <td>
         <form method="post" action="{{ url_for('admin.delete_staff', user_id=user.id) }}"
               onsubmit="return confirm('Remove {{ user.name }}?');">
@@ -27,7 +28,7 @@
       </td>
     </tr>
     {% else %}
-    <tr><td colspan="5" class="empty-state">No staff accounts yet.</td></tr>
+    <tr><td colspan="6" class="empty-state">No staff accounts yet.</td></tr>
     {% endfor %}
   </tbody>
 </table>

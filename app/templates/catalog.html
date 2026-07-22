@@ -3,31 +3,43 @@
 {% block content %}
 <h1>Training Catalogue</h1>
 
+{% macro video_grid(videos) %}
+  <div class="video-grid">
+    {% for video in videos %}
+      {% set progress = progress_by_video.get(video.id) %}
+      <a class="video-card" href="{{ url_for('main.video_detail', video_id=video.id) }}">
+        <div class="video-thumb">
+          {% if video.is_external %}
+            <span class="badge badge-external">YouTube</span>
+          {% endif %}
+          {% if progress and progress.completed_at %}
+            <span class="badge badge-done">Completed</span>
+          {% elif progress and progress.percent_complete > 0 %}
+            <span class="badge badge-progress">{{ (progress.percent_complete * 100) | round | int }}% watched</span>
+          {% else %}
+            <span class="badge badge-new">Not started</span>
+          {% endif %}
+        </div>
+        <div class="video-title">{{ video.title }}</div>
+      </a>
+    {% endfor %}
+  </div>
+{% endmacro %}
+
 {% for category in categories %}
-  {% set ready_videos = category.videos | selectattr('is_ready') | list %}
-  {% if ready_videos %}
+  {% set g = category_groups[category.id] %}
+  {% if g.ungrouped or g.groups %}
   <section class="category">
     <h2>{{ category.name }}</h2>
-    <div class="video-grid">
-      {% for video in ready_videos %}
-        {% set progress = progress_by_video.get(video.id) %}
-        <a class="video-card" href="{{ url_for('main.video_detail', video_id=video.id) }}">
-          <div class="video-thumb">
-            {% if video.is_external %}
-              <span class="badge badge-external">YouTube</span>
-            {% endif %}
-            {% if progress and progress.completed_at %}
-              <span class="badge badge-done">Completed</span>
-            {% elif progress and progress.percent_complete > 0 %}
-              <span class="badge badge-progress">{{ (progress.percent_complete * 100) | round | int }}% watched</span>
-            {% else %}
-              <span class="badge badge-new">Not started</span>
-            {% endif %}
-          </div>
-          <div class="video-title">{{ video.title }}</div>
-        </a>
-      {% endfor %}
-    </div>
+
+    {% if g.ungrouped %}
+      {{ video_grid(g.ungrouped) }}
+    {% endif %}
+
+    {% for subheading, videos in g.groups.items() %}
+      <h3 class="subheading">{{ subheading }}</h3>
+      {{ video_grid(videos) }}
+    {% endfor %}
   </section>
   {% endif %}
 {% endfor %}

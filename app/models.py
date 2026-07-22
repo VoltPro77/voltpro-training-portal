@@ -8,7 +8,10 @@ db = SQLAlchemy()
 
 
 def now():
-    return datetime.now(timezone.utc)
+    # Naive UTC, not aware — matches what SQLite/Postgres hand back after a round-trip
+    # through a plain (non-timezone) DateTime column, so a freshly computed now() can be
+    # safely subtracted from a value just loaded from the DB (see LoginSession).
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class User(db.Model, UserMixin):
@@ -31,6 +34,26 @@ class User(db.Model, UserMixin):
         return self.role == "admin"
 
 
+class LoginSession(db.Model):
+    """One row per login. last_seen_at is refreshed periodically while the user is
+    active (see app before_request hook) since most users never hit an explicit
+    logout — it's the best available proxy for when the session actually ended.
+    """
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    started_at = db.Column(db.DateTime, default=now)
+    last_seen_at = db.Column(db.DateTime, default=now)
+    ended_at = db.Column(db.DateTime, nullable=True)  # set on explicit logout
+
+    user = db.relationship("User", backref="login_sessions")
+
+    @property
+    def duration_seconds(self):
+        end = self.ended_at or self.last_seen_at
+        return max(0, int((end - self.started_at).total_seconds()))
+
+
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), unique=True, nullable=False)
@@ -45,6 +68,7 @@ class Video(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     category_id = db.Column(db.Integer, db.ForeignKey("category.id"), nullable=False)
     title = db.Column(db.String(255), nullable=False)
+    subheading = db.Column(db.String(120), nullable=True)  # groups videos within a category, e.g. a Drive subfolder name
     sort_order = db.Column(db.Integer, default=0)  # lower shows first within a category; ties break by title
     storage_key = db.Column(db.String(500), nullable=True)  # set once ingested (hosted videos)
     youtube_id = db.Column(db.String(20), nullable=True)  # set instead of storage_key for linked YouTube videos

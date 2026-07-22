@@ -3,6 +3,7 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from .auth import admin_required
 from .models import (
     Comment,
+    LoginSession,
     QuizAttempt,
     QuizQuestion,
     RegulationQuestion,
@@ -13,6 +14,18 @@ from .models import (
 )
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
+
+
+def _format_duration(seconds):
+    if seconds is None:
+        return "—"
+    hours, remainder = divmod(int(seconds), 3600)
+    minutes, secs = divmod(remainder, 60)
+    if hours:
+        return f"{hours}h {minutes}m"
+    if minutes:
+        return f"{minutes}m"
+    return f"{secs}s"
 
 
 @bp.route("/")
@@ -79,7 +92,21 @@ def staff():
         return redirect(url_for("admin.staff"))
 
     all_staff = User.query.filter_by(role="staff").order_by(User.name).all()
-    return render_template("admin_staff.html", staff=all_staff)
+
+    last_session_duration = {}
+    for u in all_staff:
+        last_session = (
+            LoginSession.query.filter_by(user_id=u.id)
+            .order_by(LoginSession.started_at.desc())
+            .first()
+        )
+        last_session_duration[u.id] = _format_duration(
+            last_session.duration_seconds if last_session else None
+        )
+
+    return render_template(
+        "admin_staff.html", staff=all_staff, last_session_duration=last_session_duration
+    )
 
 
 @bp.route("/staff/<int:user_id>/delete", methods=["POST"])
