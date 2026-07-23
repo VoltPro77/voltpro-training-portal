@@ -5,34 +5,62 @@
    AS/NZS 3008.1.1 before relying on ANY result from this calculator.
 ============================================================================
 Cable sizing is safety-critical: a single wrong value here can undersize a
-cable and create a fire or shock risk. These figures are transcribed as a
-working STARTING POINT for VoltPro's own internal use — they are NOT an
+cable and create a fire or shock risk. These figures are transcribed/estimated
+as a working STARTING POINT for VoltPro's own internal use — they are NOT an
 authoritative reproduction of the Standard, and they cover only a limited set
 of common cases. The calculator is a GUIDE ONLY; a licensed electrician must
 confirm the final design against AS/NZS 3008.
 
-Each dataset notes the AS/NZS 3008.1.1:2017 table it corresponds to so you can
-check it cell-by-cell. Correct any value in place — the calculator reads
-straight from here.
+Where an installation method or conductor has no data loaded below, the
+calculator says so and does NOT guess — those cells still need to be entered
+from AS/NZS 3008 (the table each method maps to is noted in METHOD_TABLE_REF).
 
 Cable sizes (mm²) covered: 1.5 – 300.
 """
 
 SIZES = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
 
+# Selectable nominal voltages (single-phase 230/240, three-phase 400/415).
+VOLTAGES = [230, 240, 400, 415]
+
+CONDUCTORS = [("cu", "Copper"), ("al", "Aluminium")]
+
+INSULATIONS = [
+    ("V-90", "V-90 (PVC, 90°C)"),
+    ("V-75", "V-75 (Traditional PVC, 75°C)"),
+    ("X-90", "X-90 (XLPE, 90°C)"),
+]
+
+# Installation methods — the standard AS/NZS 3008 categories. METHOD_TABLE_REF
+# notes which tables each maps to, so any "data not loaded" method is easy to fill.
+INSTALL_METHODS = [
+    ("conduit_wall", "Enclosed in conduit / in a wall"),
+    ("conduit_air", "Enclosed in conduit, in air / on a surface"),
+    ("clipped", "Unenclosed, clipped to a surface (touching)"),
+    ("spaced", "Unenclosed, spaced from surface / in free air"),
+    ("tray", "On a perforated cable tray (touching)"),
+    ("buried", "Buried direct in the ground"),
+    ("underground_conduit", "Underground, in a buried conduit / duct"),
+]
+
+METHOD_TABLE_REF = {
+    "conduit_wall": "AS/NZS 3008.1.1 Tables 4–9 (enclosed)",
+    "conduit_air": "AS/NZS 3008.1.1 Tables 4–9 (enclosed, in air)",
+    "clipped": "AS/NZS 3008.1.1 Tables 4–9 (unenclosed, touching)",
+    "spaced": "AS/NZS 3008.1.1 Tables 10–13 (spaced / free air)",
+    "tray": "AS/NZS 3008.1.1 Tables 10–13 (cable tray)",
+    "buried": "AS/NZS 3008.1.1 Tables 5 & 13 (buried direct)",
+    "underground_conduit": "AS/NZS 3008.1.1 Tables 5 & 13 (underground conduit)",
+}
+
 # ---------------------------------------------------------------------------
 # CURRENT-CARRYING CAPACITY  (amps)  — AS/NZS 3008.1.1:2017 Tables 4–15
-# Base ambient: 40 °C in air, 25 °C soil. Values are for copper conductors.
-# Keyed by (conductor, insulation, install_method) -> {size_mm²: amps}.
-# install_method:
-#   "conduit"  — enclosed in conduit / in a wall  (conservative, typical domestic)
-#   "clipped"  — unenclosed, clipped to a surface / on tray, touching
-#   "buried"   — buried direct, or in underground conduit
-# NOTE (verify): these approximate the 2- or 3-loaded-conductor columns. Only
-# copper + these three methods are in this DRAFT; add others once verified.
+# Base ambient: 40 °C air / 25 °C soil. Copper conductors. Keyed by
+# (conductor, insulation, install_method) -> {size_mm²: amps}.
+# DRAFT — populated for the common methods only; verify every value.
 # ---------------------------------------------------------------------------
 CURRENT_RATINGS = {
-    ("cu", "V-90", "conduit"): {
+    ("cu", "V-90", "conduit_wall"): {
         1.5: 15, 2.5: 21, 4: 28, 6: 36, 10: 50, 16: 66, 25: 88, 35: 109,
         50: 131, 70: 167, 95: 202, 120: 233, 150: 268, 185: 306, 240: 360, 300: 415,
     },
@@ -44,8 +72,7 @@ CURRENT_RATINGS = {
         1.5: 27, 2.5: 36, 4: 46, 6: 57, 10: 76, 16: 98, 25: 127, 35: 153,
         50: 182, 70: 223, 95: 265, 120: 300, 150: 338, 185: 379, 240: 435, 300: 487,
     },
-    # XLPE (X-90) — higher ratings than V-90 for the same size (higher temp limit).
-    ("cu", "X-90", "conduit"): {
+    ("cu", "X-90", "conduit_wall"): {
         1.5: 18, 2.5: 25, 4: 33, 6: 42, 10: 58, 16: 77, 25: 102, 35: 126,
         50: 153, 70: 194, 95: 234, 120: 271, 150: 311, 185: 354, 240: 417, 300: 481,
     },
@@ -59,11 +86,17 @@ CURRENT_RATINGS = {
     },
 }
 
+# V-75 (traditional 75°C PVC): DRAFT estimate = 0.85 × the V-90 rating, from the
+# temperature-rise ratio (75°C vs 90°C conductor limit over a 40°C ambient).
+# This is a DERIVED starting point, NOT a transcribed AS/NZS 3008 table — VERIFY.
+_V75_FACTOR = 0.85
+for (_cond, _ins, _meth), _tbl in list(CURRENT_RATINGS.items()):
+    if _ins == "V-90":
+        CURRENT_RATINGS[(_cond, "V-75", _meth)] = {s: round(a * _V75_FACTOR) for s, a in _tbl.items()}
+
 # ---------------------------------------------------------------------------
 # VOLTAGE DROP  (mV per amp per metre)  — AS/NZS 3008.1.1:2017 Tables 40–42
-# a.c. values at 75 °C conductor temperature. Keyed by conductor material ->
-# {size_mm²: {"single": 1-phase mV/A/m, "three": 3-phase mV/A/m}}.
-# (Single-phase ≈ 1.155 × three-phase; both are tabulated in the Standard.)
+# a.c. values at 75 °C. {conductor: {size: {"single": 1φ, "three": 3φ}}}.
 # ---------------------------------------------------------------------------
 VOLTAGE_DROP_MVAM = {
     "cu": {
@@ -100,36 +133,10 @@ VOLTAGE_DROP_MVAM = {
 }
 
 # ---------------------------------------------------------------------------
-# AMBIENT-TEMPERATURE DERATING  — AS/NZS 3008.1.1:2017 Tables 27–28
-# Multiplier applied to the base rating for ambient air temp (base 40 °C).
-# {insulation: {ambient_°C: factor}}
-# ---------------------------------------------------------------------------
-TEMP_DERATING = {
-    "V-90": {25: 1.21, 30: 1.14, 35: 1.07, 40: 1.00, 45: 0.93, 50: 0.85, 55: 0.76, 60: 0.65},
-    "X-90": {25: 1.14, 30: 1.10, 35: 1.05, 40: 1.00, 45: 0.95, 50: 0.89, 55: 0.84, 60: 0.77},
-}
-
-# ---------------------------------------------------------------------------
 # GROUPING / BUNCHING DERATING  — AS/NZS 3008.1.1:2017 Tables 22–25
 # Multiplier for the number of circuits grouped together (touching).
 # ---------------------------------------------------------------------------
 GROUP_DERATING = {1: 1.00, 2: 0.80, 3: 0.70, 4: 0.65, 5: 0.60, 6: 0.57, 7: 0.54, 8: 0.52, 9: 0.50}
-
-INSTALL_METHODS = [
-    ("conduit", "Enclosed in conduit / in wall"),
-    ("clipped", "Unenclosed, clipped to surface / on tray"),
-    ("buried", "Buried direct / underground conduit"),
-]
-
-INSULATIONS = [("V-90", "V-90 (PVC, 90°C)"), ("X-90", "X-90 (XLPE, 90°C)")]
-CONDUCTORS = [("cu", "Copper"), ("al", "Aluminium")]
-
-
-def nearest_temp_factor(insulation, ambient_c):
-    """Closest tabulated ambient-temperature factor (rounds to nearest 5°C row)."""
-    table = TEMP_DERATING.get(insulation, TEMP_DERATING["V-90"])
-    nearest = min(table.keys(), key=lambda t: abs(t - ambient_c))
-    return table[nearest], nearest
 
 
 def group_factor(circuits):
@@ -139,3 +146,7 @@ def group_factor(circuits):
     if circuits >= keys[-1]:
         return GROUP_DERATING[keys[-1]]
     return GROUP_DERATING[circuits]
+
+
+def has_current_data(conductor, insulation, method):
+    return (conductor, insulation, method) in CURRENT_RATINGS

@@ -551,6 +551,7 @@ video#player {
 .calc-working td:last-child { font-weight: 700; }
 .calc-warning { background: var(--red-light); border-radius: 8px; padding: 0.6rem 0.85rem; margin-top: 0.8rem; font-size: 0.9rem; }
 .calc-error { background: var(--red-light); border: 1px solid var(--red); border-radius: 8px; padding: 0.8rem 1rem; margin-top: 1rem; }
+.calc-nodata { color: var(--red); font-weight: 700; }
 
 .table-scroll { overflow-x: auto; border-radius: var(--radius); box-shadow: var(--shadow-sm); }
 table.matrix, table.simple-table {

@@ -4,17 +4,18 @@ Sizes a cable two ways and takes the larger required size:
   1. Current-carrying capacity — the derated table rating must carry the design current.
   2. Voltage drop — the volt-drop over the run must be within the allowable %.
 
-Formulas (AS/NZS 3008.1.1):
-  Design current  I_b:
-    3-phase:  I = P / (√3 · V · pf)        (P in watts)   |  S / (√3 · V)  for kVA
-    1-phase:  I = P / (V · pf)             |  S / V        for kVA
-  Voltage drop:
-    1-phase:  Vd = I · L · (mV/A/m)_1φ / 1000
-    3-phase:  Vd = I · L · (mV/A/m)_3φ / 1000
-  Current capacity: required base rating = I_b / (temp_factor · group_factor).
+Design current I_b:
+  Amps: entered directly.
+  kVA:  3-phase I = S / (√3 · V)   |   1-phase I = S / V.   (no power factor needed)
+Voltage drop:
+  1-phase: Vd = I · L · (mV/A/m)_1φ / 1000
+  3-phase: Vd = I · L · (mV/A/m)_3φ / 1000
+Current capacity: required base rating = I_b / grouping_factor  (base ambient 40 °C).
 
 All numeric table values come from cable_data.py, which is DRAFT and must be verified
-against AS/NZS 3008 — see the disclaimer shown on the page. This tool is a guide only.
+against AS/NZS 3008 — see the disclaimer on the page. This tool is a guide only. Where no
+rating table is loaded for a chosen conductor/insulation/method, the current-capacity check
+is reported as NOT DONE rather than guessed.
 """
 import math
 
@@ -26,121 +27,115 @@ from . import cable_data as cd
 bp = Blueprint("cable", __name__)
 
 
-def design_current(phases, voltage, rating_value, rating_unit, power_factor):
+def design_current(phases, voltage, rating_value, rating_unit):
     """Return design current I_b in amps, or None if inputs are insufficient."""
     if voltage <= 0 or rating_value <= 0:
         return None
     unit = rating_unit.lower()
-
     if unit == "a":
         return rating_value
-
-    # Normalise to watts (real) or VA (apparent).
-    if unit == "kw":
-        watts = rating_value * 1000.0
-    elif unit == "hp":
-        watts = rating_value * 746.0
-    elif unit == "kva":
+    if unit == "kva":
         va = rating_value * 1000.0
-    else:
-        return None
-
-    if phases == "3":
-        root3 = math.sqrt(3)
-        if unit == "kva":
-            return va / (root3 * voltage)
-        pf = power_factor if power_factor and power_factor > 0 else 0.8
-        return watts / (root3 * voltage * pf)
-    else:  # single phase (and dc handled as 1-phase resistive)
-        if unit == "kva":
-            return va / voltage
-        pf = power_factor if power_factor and power_factor > 0 else 0.8
-        return watts / (voltage * pf)
+        if phases == "3":
+            return va / (math.sqrt(3) * voltage)
+        return va / voltage
+    return None
 
 
-def size_by_current(conductor, insulation, method, i_b, temp_factor, grp_factor):
-    """Smallest size whose derated rating carries i_b. Returns (size, base_rating, derated)."""
+def size_by_current(conductor, insulation, method, i_b, derate_factor):
+    """Smallest size whose derated rating carries i_b.
+    Returns (size, base_rating, derated, reason) where reason is
+    'ok' | 'no_data' | 'exceeds'.
+    """
     table = cd.CURRENT_RATINGS.get((conductor, insulation, method))
     if not table:
-        return None, None, None
-    k = temp_factor * grp_factor
+        return None, None, None, "no_data"
     for size in cd.SIZES:
         base = table.get(size)
         if base is None:
             continue
-        if base * k >= i_b:
-            return size, base, round(base * k, 1)
-    return None, None, None
+        if base * derate_factor >= i_b:
+            return size, base, round(base * derate_factor, 1), "ok"
+    return None, None, None, "exceeds"
 
 
 def size_by_voltage_drop(conductor, phases, voltage, i_b, length_m, max_vd_pct):
-    """Smallest size whose voltage drop is within max_vd_pct. Returns (size, vd_volts, vd_pct)."""
+    """Smallest size within the voltage-drop limit.
+    Returns (size, vd_volts, vd_pct, reason) — reason 'ok' | 'no_data' | 'exceeds'.
+    """
     table = cd.VOLTAGE_DROP_MVAM.get(conductor)
     if not table:
-        return None, None, None
+        return None, None, None, "no_data"
     key = "three" if phases == "3" else "single"
     limit_volts = voltage * max_vd_pct / 100.0
     for size in cd.SIZES:
         row = table.get(size)
         if not row or key not in row:
             continue
-        mvam = row[key]
-        vd = mvam * i_b * length_m / 1000.0
+        vd = row[key] * i_b * length_m / 1000.0
         if vd <= limit_volts:
-            return size, round(vd, 2), round(vd / voltage * 100, 2)
-    return None, None, None
+            return size, round(vd, 2), round(vd / voltage * 100, 2), "ok"
+    return None, None, None, "exceeds"
 
 
 def calculate(form):
-    warnings = []
-
     phases = form.get("phases", "3")
     try:
         voltage = float(form.get("voltage") or 0)
         rating_value = float(form.get("rating_value") or 0)
         length_m = float(form.get("length_m") or 0)
         max_vd_pct = float(form.get("max_vd_pct") or 2.5)
-        power_factor = float(form.get("power_factor") or 0.8)
         circuits = int(float(form.get("circuits") or 1))
-        ambient = float(form.get("ambient") or 40)
     except ValueError:
         return {"error": "Please enter valid numbers in all fields."}
 
     rating_unit = form.get("rating_unit", "A")
     conductor = form.get("conductor", "cu")
     insulation = form.get("insulation", "V-90")
-    method = form.get("method", "conduit")
+    method = form.get("method", "conduit_wall")
 
-    i_b = design_current(phases, voltage, rating_value, rating_unit, power_factor)
+    i_b = design_current(phases, voltage, rating_value, rating_unit)
     if i_b is None:
-        return {"error": "Enter a voltage and a load rating greater than zero."}
+        return {"error": "Enter a voltage and a load (A or kVA) greater than zero."}
     i_b = round(i_b, 1)
 
-    temp_factor, temp_row = cd.nearest_temp_factor(insulation, ambient)
     grp_factor = cd.group_factor(circuits)
+    warnings = []
 
-    cc_size, cc_base, cc_derated = size_by_current(
-        conductor, insulation, method, i_b, temp_factor, grp_factor
+    cc_size, cc_base, cc_derated, cc_reason = size_by_current(
+        conductor, insulation, method, i_b, grp_factor
     )
-    if cc_size is None:
+    if cc_reason == "no_data":
         warnings.append(
-            "Current capacity exceeds the largest cable in this DRAFT table (300mm²) "
-            "for the chosen method — consider parallel cables, a different install "
-            "method, or verify/extend the table."
+            "⚠ CURRENT CAPACITY NOT CHECKED — no AS/NZS 3008 rating table is loaded for this "
+            "conductor / insulation / installation method ({ref}). The size below is the "
+            "voltage-drop result ONLY and may be too small for the load current. Add/verify "
+            "that table before relying on this.".format(ref=cd.METHOD_TABLE_REF.get(method, "the relevant table"))
+        )
+    elif cc_reason == "exceeds":
+        warnings.append(
+            "Current capacity exceeds the largest cable in this DRAFT table (300mm²) for the "
+            "chosen method — consider parallel cables or verify/extend the table."
         )
 
-    vd_size, vd_volts, vd_pct = size_by_voltage_drop(
+    vd_size, vd_volts, vd_pct, vd_reason = size_by_voltage_drop(
         conductor, phases, voltage, i_b, length_m, max_vd_pct
     )
-    if vd_size is None:
+    if vd_reason == "no_data":
         warnings.append(
-            "Voltage drop can't be met within 300mm² for this run length — consider "
-            "parallel cables or a shorter run."
+            "No voltage-drop (mV/A/m) data loaded for this conductor — verify/add it from "
+            "AS/NZS 3008 Tables 40–42."
+        )
+    elif vd_reason == "exceeds":
+        warnings.append(
+            "Voltage drop can't be met within 300mm² for this run length — consider parallel "
+            "cables or a shorter run."
         )
 
-    # Governing size = larger of the two requirements.
+    # Governing size = larger of the two requirements (only combine when both are real).
     final_size = None
     governed_by = None
+    incomplete = cc_reason != "ok"
     if cc_size and vd_size:
         if cc_size >= vd_size:
             final_size, governed_by = cc_size, "current capacity"
@@ -149,29 +144,26 @@ def calculate(form):
     elif cc_size:
         final_size, governed_by = cc_size, "current capacity"
     elif vd_size:
-        final_size, governed_by = vd_size, "voltage drop"
+        final_size = vd_size
+        governed_by = "voltage drop only (current capacity NOT checked)" if incomplete else "voltage drop"
 
-    # Recompute the actual voltage drop AT the final chosen size for the report.
     final_vd_pct = None
     if final_size:
-        vtable = cd.VOLTAGE_DROP_MVAM.get(conductor, {})
-        row = vtable.get(final_size)
+        row = cd.VOLTAGE_DROP_MVAM.get(conductor, {}).get(final_size)
         if row:
             key = "three" if phases == "3" else "single"
             mvam = row.get(key)
             if mvam:
-                final_vd = mvam * i_b * length_m / 1000.0
-                final_vd_pct = round(final_vd / voltage * 100, 2)
+                final_vd_pct = round(mvam * i_b * length_m / 1000.0 / voltage * 100, 2)
 
     return {
         "i_b": i_b,
-        "temp_factor": temp_factor,
-        "temp_row": temp_row,
         "grp_factor": grp_factor,
         "circuits": circuits,
         "cc_size": cc_size,
         "cc_base": cc_base,
         "cc_derated": cc_derated,
+        "cc_reason": cc_reason,
         "vd_size": vd_size,
         "vd_volts": vd_volts,
         "vd_pct": vd_pct,
@@ -179,19 +171,8 @@ def calculate(form):
         "final_size": final_size,
         "governed_by": governed_by,
         "final_vd_pct": final_vd_pct,
+        "incomplete": incomplete,
         "warnings": warnings,
-        "inputs": {
-            "phases": phases,
-            "voltage": voltage,
-            "rating_value": rating_value,
-            "rating_unit": rating_unit,
-            "length_m": length_m,
-            "conductor": conductor,
-            "insulation": insulation,
-            "method": method,
-            "power_factor": power_factor,
-            "ambient": ambient,
-        },
     }
 
 
@@ -203,6 +184,7 @@ def calculator():
         "calculator.html",
         result=result,
         form=request.form,
+        voltages=cd.VOLTAGES,
         install_methods=cd.INSTALL_METHODS,
         insulations=cd.INSULATIONS,
         conductors=cd.CONDUCTORS,
