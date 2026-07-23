@@ -6,6 +6,7 @@ from . import config
 from .admin import bp as admin_bp
 from .ask import bp as ask_bp
 from .auth import bp as auth_bp, init_login
+from .cable import bp as cable_bp
 from .models import Category, LoginSession, User, db, now
 from .routes import bp as main_bp
 
@@ -44,6 +45,7 @@ def create_app():
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(ask_bp)
+    app.register_blueprint(cable_bp)
 
     @app.before_request
     def _touch_login_session():

@@ -519,6 +519,39 @@ video#player {
 }
 .dashboard-filters select:focus { outline: none; border-color: var(--orange); }
 
+/* ---------- Cable calculator ---------- */
+.calc-disclaimer {
+  background: var(--orange-light);
+  border: 1.5px solid var(--orange);
+  border-radius: var(--radius);
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.calc-form { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.3rem; box-shadow: var(--shadow-sm); }
+.calc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1rem 1.2rem;
+  margin-bottom: 1.2rem;
+}
+.calc-grid label { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; color: var(--muted); }
+.calc-grid input, .calc-grid select {
+  padding: 0.6rem 0.7rem; border: 1.5px solid var(--border); border-radius: 8px;
+  font-size: 0.95rem; background: var(--card); color: var(--text);
+}
+.calc-grid input:focus, .calc-grid select:focus { outline: none; border-color: var(--orange); }
+
+.calc-result { margin-top: 1.75rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.3rem; box-shadow: var(--shadow-sm); }
+.calc-headline { font-size: 1.25rem; }
+.calc-headline strong { color: var(--orange); font-size: 1.5rem; }
+.calc-governed { color: var(--muted); font-size: 0.95rem; font-weight: 600; }
+.calc-headline-warn { color: var(--red); font-size: 1.05rem; }
+.calc-working td:last-child { font-weight: 700; }
+.calc-warning { background: var(--red-light); border-radius: 8px; padding: 0.6rem 0.85rem; margin-top: 0.8rem; font-size: 0.9rem; }
+.calc-error { background: var(--red-light); border: 1px solid var(--red); border-radius: 8px; padding: 0.8rem 1rem; margin-top: 1rem; }
+
 .table-scroll { overflow-x: auto; border-radius: var(--radius); box-shadow: var(--shadow-sm); }
 table.matrix, table.simple-table {
   border-collapse: collapse;

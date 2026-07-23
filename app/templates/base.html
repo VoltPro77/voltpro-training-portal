@@ -25,6 +25,7 @@
     <nav class="header-nav">
       <a href="{{ url_for('main.catalog') }}" class="{{ 'active' if request.endpoint == 'main.catalog' or request.endpoint == 'main.video_detail' else '' }}">Catalogue</a>
       <a href="{{ url_for('ask.ask_page') }}" class="{{ 'active' if request.endpoint == 'ask.ask_page' else '' }}">Regs</a>
+      <a href="{{ url_for('cable.calculator') }}" class="{{ 'active' if request.endpoint == 'cable.calculator' else '' }}">Calculator</a>
       {% if current_user.is_admin %}
       <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if request.endpoint == 'admin.dashboard' else '' }}">Dashboard</a>
       <a href="{{ url_for('admin.videos') }}" class="{{ 'active' if request.endpoint in ['admin.videos', 'admin.toggle_priority'] else '' }}">Videos</a>

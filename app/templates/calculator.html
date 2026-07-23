@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Cable Sizing Calculator — VoltPro Training{% endblock %}
+{% block content %}
+<h1>Cable Sizing Calculator</h1>
+
+<div class="calc-disclaimer">
+  <strong>⚠ Guide only — verify against AS/NZS 3008.</strong>
+  This tool uses the AS/NZS 3008.1.1 methodology, but its reference tables are a
+  <strong>DRAFT starting set covering common cases only</strong> and must be checked against
+  your licensed copy of the Standard before use. It does not replace a licensed electrician's
+  design judgement. Always confirm the final cable size, protection, and installation
+  conditions against AS/NZS 3008 and AS/NZS 3000.
+</div>
+
+<form method="post" class="calc-form" action="{{ url_for('cable.calculator') }}">
+  <div class="calc-grid">
+    <label>Phase
+      <select name="phases">
+        <option value="3" {{ 'selected' if form.get('phases','3')=='3' }}>3 Phase AC</option>
+        <option value="1" {{ 'selected' if form.get('phases')=='1' }}>1 Phase AC</option>
+      </select>
+    </label>
+    <label>Voltage (V)
+      <input type="number" step="any" name="voltage" value="{{ form.get('voltage','400') }}" required>
+    </label>
+    <label>Load
+      <input type="number" step="any" name="rating_value" value="{{ form.get('rating_value','') }}" required>
+    </label>
+    <label>Load unit
+      <select name="rating_unit">
+        {% for u in ['A','kW','kVA','hp'] %}
+          <option value="{{ u }}" {{ 'selected' if form.get('rating_unit','A')==u }}>{{ u }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Power factor
+      <input type="number" step="any" min="0" max="1" name="power_factor" value="{{ form.get('power_factor','0.8') }}">
+    </label>
+    <label>Cable run length (m)
+      <input type="number" step="any" name="length_m" value="{{ form.get('length_m','') }}" required>
+    </label>
+    <label>Max voltage drop (%)
+      <input type="number" step="any" name="max_vd_pct" value="{{ form.get('max_vd_pct','2.5') }}">
+    </label>
+    <label>Conductor
+      <select name="conductor">
+        {% for val,label in conductors %}
+          <option value="{{ val }}" {{ 'selected' if form.get('conductor','cu')==val }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Insulation
+      <select name="insulation">
+        {% for val,label in insulations %}
+          <option value="{{ val }}" {{ 'selected' if form.get('insulation','V-90')==val }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Installation method
+      <select name="method">
+        {% for val,label in install_methods %}
+          <option value="{{ val }}" {{ 'selected' if form.get('method','conduit')==val }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Ambient temp (°C)
+      <input type="number" step="any" name="ambient" value="{{ form.get('ambient','40') }}">
+    </label>
+    <label>Grouped circuits
+      <input type="number" step="1" min="1" name="circuits" value="{{ form.get('circuits','1') }}">
+    </label>
+  </div>
+  <button type="submit">Calculate</button>
+</form>
+
+{% if result %}
+  {% if result.error %}
+    <div class="calc-error">{{ result.error }}</div>
+  {% else %}
+    <section class="calc-result">
+      {% if result.final_size %}
+        <div class="calc-headline">
+          Minimum cable size: <strong>{{ result.final_size }} mm²</strong>
+          <span class="calc-governed">(governed by {{ result.governed_by }})</span>
+        </div>
+      {% else %}
+        <div class="calc-headline calc-headline-warn">No size in the DRAFT table satisfies both checks — see notes below.</div>
+      {% endif %}
+
+      {% for w in result.warnings %}
+        <div class="calc-warning">⚠ {{ w }}</div>
+      {% endfor %}
+
+      <h3>Working</h3>
+      <table class="simple-table calc-working">
+        <tbody>
+          <tr><td>Design current (I_b)</td><td>{{ result.i_b }} A</td></tr>
+          <tr><td>Temperature derating (ambient ≈{{ result.temp_row }}°C)</td><td>× {{ result.temp_factor }}</td></tr>
+          <tr><td>Grouping derating ({{ result.circuits }} circuit{{ 's' if result.circuits != 1 }})</td><td>× {{ result.grp_factor }}</td></tr>
+          <tr>
+            <td>Size for current capacity</td>
+            <td>
+              {% if result.cc_size %}
+                {{ result.cc_size }} mm² — base {{ result.cc_base }} A, derated to {{ result.cc_derated }} A
+              {% else %}— exceeds table{% endif %}
+            </td>
+          </tr>
+          <tr>
+            <td>Size for voltage drop (limit {{ result.max_vd_pct }}%)</td>
+            <td>
+              {% if result.vd_size %}
+                {{ result.vd_size }} mm² — {{ result.vd_volts }} V ({{ result.vd_pct }}%)
+              {% else %}— exceeds table{% endif %}
+            </td>
+          </tr>
+          {% if result.final_size and result.final_vd_pct is not none %}
+            <tr><td>Voltage drop at {{ result.final_size }} mm²</td><td>{{ result.final_vd_pct }}%</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+      <p class="hint">Every figure above is drawn from the DRAFT AS/NZS 3008 tables — verify them before relying on this result.</p>
+    </section>
+  {% endif %}
+{% endif %}
+{% endblock %}
