@@ -136,6 +136,21 @@ class QuizQuestion(db.Model):
 
     attempts = db.relationship("QuizAttempt", backref="question", cascade="all, delete-orphan")
 
+    @property
+    def choices(self):
+        import json as _json
+
+        return _json.loads(self.choices_json)
+
+    def choice_text(self, index):
+        """Human-readable text for a choice index, or '—' if out of range/None."""
+        if index is None:
+            return "—"
+        try:
+            return self.choices[index]
+        except (IndexError, TypeError):
+            return "—"
+
 
 class QuizAttempt(db.Model):
     id = db.Column(db.Integer, primary_key=True)

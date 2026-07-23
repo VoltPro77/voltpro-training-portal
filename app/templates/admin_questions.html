@@ -9,7 +9,13 @@
 {% else %}
   {% for q in questions %}
     <div class="regs-qa">
-      <div class="regs-question"><strong>{{ q.user.name }}</strong> asked: {{ q.question }}</div>
+      <div class="regs-qa-head">
+        <div class="regs-question"><strong>{{ q.user.name }}</strong> asked: {{ q.question }}</div>
+        <form method="post" action="{{ url_for('admin.delete_question', question_id=q.id) }}"
+              onsubmit="return confirm('Delete this question from the log? This cannot be undone.');">
+          <button type="submit" class="link-button">Delete</button>
+        </form>
+      </div>
       <div class="regs-answer">{{ q.answer }}</div>
       {% if q.formatted_citations %}
         <div class="regs-cites">Source: {{ q.formatted_citations }}</div>

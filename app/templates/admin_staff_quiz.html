@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ staff_member.name }} — Quiz Report{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('admin.staff') }}">&larr; Staff</a>
+<h1>{{ staff_member.name }} — Quiz Report</h1>
+<p class="hint">
+  Score: <strong>{{ correct }}/{{ total }}</strong>
+  {% if total %}({{ (correct / total * 100) | round | int }}%){% endif %}
+  — based on their most recent answer to each question.
+</p>
+
+{% if not rows %}
+  <p class="empty-state">{{ staff_member.name }} hasn't attempted any quizzes yet.</p>
+{% else %}
+<table class="simple-table">
+  <thead><tr><th>Result</th><th>Question</th><th>Video</th><th>Their answer</th><th>Correct answer</th></tr></thead>
+  <tbody>
+    {% for row in rows %}
+    <tr class="{{ '' if row.attempt.is_correct else 'row-wrong' }}">
+      <td>
+        {% if row.attempt.is_correct %}
+          <span class="badge badge-done">✓ Correct</span>
+        {% else %}
+          <span class="badge badge-wrong">✗ Wrong</span>
+        {% endif %}
+      </td>
+      <td>{{ row.question.question_text }}</td>
+      <td>{{ row.video.title }}</td>
+      <td>{{ row.selected_text }}</td>
+      <td>{{ row.correct_text }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

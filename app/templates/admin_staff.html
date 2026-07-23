@@ -15,7 +15,7 @@
   <tbody>
     {% for user in staff %}
     <tr>
-      <td>{{ user.name }}</td>
+      <td><a href="{{ url_for('admin.staff_quiz', user_id=user.id) }}">{{ user.name }}</a></td>
       <td>{{ user.username }}</td>
       <td>{{ user.created_at.strftime('%d %b %Y') }}</td>
       <td>{{ user.last_login_at.strftime('%d %b %Y %H:%M') if user.last_login_at else 'Never' }}</td>

@@ -1,4 +1,6 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+import json
+
+from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 
 from .auth import admin_required
 from .models import (
@@ -27,6 +29,26 @@ def _format_duration(seconds):
     if minutes:
         return f"{minutes}m"
     return f"{secs}s"
+
+
+def _latest_attempts_by_staff():
+    """Map (user_id, question_id) -> the staff member's most recent QuizAttempt.
+
+    Quizzes are retakeable, so a staff member can have several attempts at the same
+    question. Every quiz metric here is computed on the LATEST attempt per question (the
+    same basis the dashboard uses for scores) — so someone who retakes and gets it right
+    correctly drops off the "missed" lists. Admin/test attempts are excluded so they never
+    pollute staff stats.
+    """
+    staff_ids = {u.id for u in User.query.filter_by(role="staff").all()}
+    latest = {}
+    attempts = (
+        QuizAttempt.query.order_by(QuizAttempt.attempted_at, QuizAttempt.id).all()
+    )
+    for a in attempts:
+        if a.user_id in staff_ids:
+            latest[(a.user_id, a.question_id)] = a  # ascending order → last write wins = latest
+    return latest
 
 
 @bp.route("/")
@@ -130,6 +152,17 @@ def questions():
     return render_template("admin_questions.html", questions=all_questions)
 
 
+@bp.route("/questions/<int:question_id>/delete", methods=["POST"])
+@admin_required
+def delete_question(question_id):
+    question = db.session.get(RegulationQuestion, question_id)
+    if question:
+        db.session.delete(question)
+        db.session.commit()
+        flash("Question removed from the log.", "success")
+    return redirect(url_for("admin.questions"))
+
+
 @bp.route("/videos")
 @admin_required
 def videos():
@@ -175,29 +208,69 @@ def toggle_priority(video_id):
 @bp.route("/quiz-insights")
 @admin_required
 def quiz_insights():
-    rows = (
-        db.session.query(
-            QuizQuestion,
-            db.func.count(QuizAttempt.id).label("attempts"),
-            db.func.sum(db.case((QuizAttempt.is_correct.is_(False), 1), else_=0)).label("misses"),
-        )
-        .join(QuizAttempt, QuizAttempt.question_id == QuizQuestion.id)
-        .group_by(QuizQuestion.id)
-        .having(db.func.count(QuizAttempt.id) > 0)
-        .all()
-    )
+    latest = _latest_attempts_by_staff()
+
+    # Aggregate per question on the latest-attempt basis.
+    per_question = {}
+    for (_user_id, question_id), attempt in latest.items():
+        entry = per_question.setdefault(question_id, {"attempts": 0, "missers": []})
+        entry["attempts"] += 1
+        if not attempt.is_correct:
+            entry["missers"].append(attempt.user)
 
     insights = []
-    for question, attempts, misses in rows:
+    for question_id, entry in per_question.items():
+        question = db.session.get(QuizQuestion, question_id)
+        if not question:
+            continue
+        misses = len(entry["missers"])
         insights.append(
             {
                 "question": question,
                 "video": question.video,
-                "attempts": attempts,
+                "attempts": entry["attempts"],
                 "misses": misses,
-                "miss_rate": round(misses / attempts * 100) if attempts else 0,
+                "miss_rate": round(misses / entry["attempts"] * 100) if entry["attempts"] else 0,
+                "missers": sorted(entry["missers"], key=lambda u: u.name),
             }
         )
     insights.sort(key=lambda r: (-r["miss_rate"], -r["attempts"]))
 
     return render_template("admin_quiz_insights.html", insights=insights)
+
+
+@bp.route("/staff/<int:user_id>/quiz")
+@admin_required
+def staff_quiz(user_id):
+    user = db.session.get(User, user_id)
+    if not user or user.role != "staff":
+        abort(404)
+
+    latest = _latest_attempts_by_staff()
+    rows = []
+    correct = 0
+    for (attempt_user_id, question_id), attempt in latest.items():
+        if attempt_user_id != user.id:
+            continue
+        question = db.session.get(QuizQuestion, question_id)
+        if not question:
+            continue
+        if attempt.is_correct:
+            correct += 1
+        rows.append(
+            {
+                "question": question,
+                "video": question.video,
+                "attempt": attempt,
+                "selected_text": question.choice_text(attempt.selected_index),
+                "correct_text": question.choice_text(question.correct_index),
+            }
+        )
+
+    total = len(rows)
+    # Wrong answers first (is_correct False sorts before True), then by video title.
+    rows.sort(key=lambda r: (r["attempt"].is_correct, r["video"].title))
+
+    return render_template(
+        "admin_staff_quiz.html", staff_member=user, rows=rows, correct=correct, total=total
+    )

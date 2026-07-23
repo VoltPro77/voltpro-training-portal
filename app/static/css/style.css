@@ -319,6 +319,21 @@ input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
 .badge-progress { background: var(--orange); color: #fff; }
 .badge-done { background: var(--green); color: #fff; }
 .badge-external { background: #cc0000; color: #fff; }
+.badge-wrong { background: var(--red); color: #fff; }
+
+.misser-list { margin: 0.5rem 0 0.2rem; padding-left: 1.1rem; }
+.misser-list li { margin-bottom: 0.2rem; }
+
+.row-wrong { background: var(--red-light); }
+
+.regs-qa-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.regs-qa-head .regs-question { margin-bottom: 0.5rem; }
+.regs-qa-head form { flex-shrink: 0; }
 
 .back-link { color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 600; }
 .back-link:hover { color: var(--orange); }
