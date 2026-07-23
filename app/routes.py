@@ -25,18 +25,39 @@ def _video_url(video):
 @bp.route("/")
 @login_required
 def catalog():
-    categories = Category.query.order_by(Category.sort_order, Category.name).all()
+    query = request.args.get("q", "").strip()
     progress_by_video = {
         p.video_id: p
         for p in WatchProgress.query.filter_by(user_id=current_user.id).all()
     }
 
+    if query:
+        search_results = (
+            Video.query.filter(Video.title.ilike(f"%{query}%"))
+            .order_by(Video.title)
+            .all()
+        )
+        search_results = [v for v in search_results if v.is_ready]
+        return render_template(
+            "catalog.html",
+            categories=[],
+            progress_by_video=progress_by_video,
+            category_groups={},
+            priority_videos=[],
+            search_query=query,
+            search_results=search_results,
+        )
+
+    categories = Category.query.order_by(Category.sort_order, Category.name).all()
+
     # Videos without a subheading show directly under the category; videos that share a
     # subheading (mirroring a Google Drive subfolder) are grouped under it, subheadings
     # ordered by first appearance in sort_order.
     category_groups = {}
+    priority_videos = []
     for category in categories:
         ready = [v for v in category.videos if v.is_ready]
+        priority_videos.extend(v for v in ready if v.is_priority)
         ungrouped = [v for v in ready if not v.subheading]
         groups = OrderedDict()
         for v in ready:
@@ -49,6 +70,9 @@ def catalog():
         categories=categories,
         progress_by_video=progress_by_video,
         category_groups=category_groups,
+        priority_videos=priority_videos,
+        search_query="",
+        search_results=None,
     )
 
 

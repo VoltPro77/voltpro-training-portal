@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Quiz Insights — VoltPro Training{% endblock %}
+{% block content %}
+<h1>Quiz Insights</h1>
+<p class="hint">Questions staff get wrong most often — a real signal for where understanding is thin, sorted by miss rate.</p>
+
+{% if not insights %}
+  <p class="empty-state">No quiz attempts yet.</p>
+{% else %}
+<table class="simple-table">
+  <thead><tr><th>Question</th><th>Video</th><th>Attempts</th><th>Miss rate</th></tr></thead>
+  <tbody>
+    {% for row in insights %}
+    <tr>
+      <td>{{ row.question.question_text }}</td>
+      <td>{{ row.video.title }}</td>
+      <td>{{ row.attempts }}</td>
+      <td>{{ row.misses }}/{{ row.attempts }} ({{ row.miss_rate }}%)</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

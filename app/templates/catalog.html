@@ -3,6 +3,14 @@
 {% block content %}
 <h1>Training Catalogue</h1>
 
+<form method="get" class="catalog-search" action="{{ url_for('main.catalog') }}">
+  <input type="text" name="q" placeholder="Search video titles..." value="{{ search_query }}">
+  <button type="submit">Search</button>
+  {% if search_query %}
+    <a class="btn-pill btn-pill-ghost" href="{{ url_for('main.catalog') }}">Clear</a>
+  {% endif %}
+</form>
+
 {% macro video_grid(videos) %}
   <div class="video-grid">
     {% for video in videos %}
@@ -26,25 +34,44 @@
   </div>
 {% endmacro %}
 
-{% for category in categories %}
-  {% set g = category_groups[category.id] %}
-  {% if g.ungrouped or g.groups %}
+{% if search_results is not none %}
   <section class="category">
-    <h2>{{ category.name }}</h2>
-
-    {% if g.ungrouped %}
-      {{ video_grid(g.ungrouped) }}
+    <h2>Search results for "{{ search_query }}"</h2>
+    {% if search_results %}
+      {{ video_grid(search_results) }}
+    {% else %}
+      <p class="empty-state">No video titles match "{{ search_query }}".</p>
     {% endif %}
+  </section>
+{% else %}
 
-    {% for subheading, videos in g.groups.items() %}
-      <h3 class="subheading">{{ subheading }}</h3>
-      {{ video_grid(videos) }}
-    {% endfor %}
+  {% if priority_videos %}
+  <section class="category priority-section">
+    <h2>★ Watch These First</h2>
+    {{ video_grid(priority_videos) }}
   </section>
   {% endif %}
-{% endfor %}
 
-{% if categories | selectattr('videos') | list | length == 0 %}
-  <p class="empty-state">No videos have been ingested yet.</p>
+  {% for category in categories %}
+    {% set g = category_groups[category.id] %}
+    {% if g.ungrouped or g.groups %}
+    <section class="category">
+      <h2>{{ category.name }}</h2>
+
+      {% if g.ungrouped %}
+        {{ video_grid(g.ungrouped) }}
+      {% endif %}
+
+      {% for subheading, videos in g.groups.items() %}
+        <h3 class="subheading">{{ subheading }}</h3>
+        {{ video_grid(videos) }}
+      {% endfor %}
+    </section>
+    {% endif %}
+  {% endfor %}
+
+  {% if categories | selectattr('videos') | list | length == 0 %}
+    <p class="empty-state">No videos have been ingested yet.</p>
+  {% endif %}
 {% endif %}
 {% endblock %}

@@ -2,6 +2,7 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from .auth import admin_required
 from .models import (
+    Category,
     Comment,
     LoginSession,
     QuizAttempt,
@@ -127,3 +128,76 @@ def questions():
         RegulationQuestion.query.order_by(RegulationQuestion.created_at.desc()).all()
     )
     return render_template("admin_questions.html", questions=all_questions)
+
+
+@bp.route("/videos")
+@admin_required
+def videos():
+    staff_count = User.query.filter_by(role="staff").count()
+
+    completed_counts = dict(
+        db.session.query(WatchProgress.video_id, db.func.count(WatchProgress.id))
+        .filter(WatchProgress.completed_at.isnot(None))
+        .group_by(WatchProgress.video_id)
+        .all()
+    )
+
+    categories = Category.query.order_by(Category.sort_order).all()
+    video_stats = {}
+    for category in categories:
+        for video in category.videos:
+            if not video.is_ready:
+                continue
+            completed = completed_counts.get(video.id, 0)
+            video_stats[video.id] = {
+                "completed": completed,
+                "pct": round(completed / staff_count * 100) if staff_count else 0,
+            }
+
+    return render_template(
+        "admin_videos.html",
+        categories=categories,
+        video_stats=video_stats,
+        staff_count=staff_count,
+    )
+
+
+@bp.route("/videos/<int:video_id>/toggle-priority", methods=["POST"])
+@admin_required
+def toggle_priority(video_id):
+    video = db.session.get(Video, video_id)
+    if video:
+        video.is_priority = not video.is_priority
+        db.session.commit()
+    return redirect(url_for("admin.videos"))
+
+
+@bp.route("/quiz-insights")
+@admin_required
+def quiz_insights():
+    rows = (
+        db.session.query(
+            QuizQuestion,
+            db.func.count(QuizAttempt.id).label("attempts"),
+            db.func.sum(db.case((QuizAttempt.is_correct.is_(False), 1), else_=0)).label("misses"),
+        )
+        .join(QuizAttempt, QuizAttempt.question_id == QuizQuestion.id)
+        .group_by(QuizQuestion.id)
+        .having(db.func.count(QuizAttempt.id) > 0)
+        .all()
+    )
+
+    insights = []
+    for question, attempts, misses in rows:
+        insights.append(
+            {
+                "question": question,
+                "video": question.video,
+                "attempts": attempts,
+                "misses": misses,
+                "miss_rate": round(misses / attempts * 100) if attempts else 0,
+            }
+        )
+    insights.sort(key=lambda r: (-r["miss_rate"], -r["attempts"]))
+
+    return render_template("admin_quiz_insights.html", insights=insights)

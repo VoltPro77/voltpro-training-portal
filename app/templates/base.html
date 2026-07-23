@@ -27,8 +27,10 @@
       <a href="{{ url_for('ask.ask_page') }}" class="{{ 'active' if request.endpoint == 'ask.ask_page' else '' }}">Regs</a>
       {% if current_user.is_admin %}
       <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if request.endpoint == 'admin.dashboard' else '' }}">Dashboard</a>
+      <a href="{{ url_for('admin.videos') }}" class="{{ 'active' if request.endpoint in ['admin.videos', 'admin.toggle_priority'] else '' }}">Videos</a>
       <a href="{{ url_for('admin.staff') }}" class="{{ 'active' if request.endpoint == 'admin.staff' else '' }}">Staff</a>
       <a href="{{ url_for('admin.questions') }}" class="{{ 'active' if request.endpoint == 'admin.questions' else '' }}">Questions</a>
+      <a href="{{ url_for('admin.quiz_insights') }}" class="{{ 'active' if request.endpoint == 'admin.quiz_insights' else '' }}">Quiz Insights</a>
       {% endif %}
     </nav>
   </header>

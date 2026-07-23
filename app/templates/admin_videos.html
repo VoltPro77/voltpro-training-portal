@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Videos — VoltPro Training{% endblock %}
+{% block content %}
+<h1>Videos</h1>
+<p class="hint">Mark a video as priority to pin it under "Watch These First" on the catalogue. Completion % is out of {{ staff_count }} staff account{{ 's' if staff_count != 1 }}.</p>
+
+{% for category in categories %}
+  {% set ready_videos = category.videos | selectattr('is_ready') | list %}
+  {% if ready_videos %}
+  <section class="category">
+    <h2>{{ category.name }}</h2>
+    <table class="simple-table">
+      <thead><tr><th>Title</th><th>Subheading</th><th>Completed</th><th>Priority</th></tr></thead>
+      <tbody>
+        {% for video in ready_videos %}
+          {% set stats = video_stats.get(video.id, {"completed": 0, "pct": 0}) %}
+          <tr>
+            <td>{{ video.title }}</td>
+            <td>{{ video.subheading or "—" }}</td>
+            <td>{{ stats.completed }}/{{ staff_count }} ({{ stats.pct }}%)</td>
+            <td>
+              <form method="post" action="{{ url_for('admin.toggle_priority', video_id=video.id) }}">
+                <button type="submit" class="link-button">
+                  {% if video.is_priority %}★ Priority{% else %}☆ Mark priority{% endif %}
+                </button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  {% endif %}
+{% endfor %}
+{% endblock %}

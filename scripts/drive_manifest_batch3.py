@@ -1,0 +1,122 @@
+"""Manifest of the 98 videos found in newly-populated Google Drive subfolders on
+2026-07-22 (Fault Finding, new Switchboards top-level folder, Toyota, Generator,
+3 Phase, Lighting > LED Down Lights). Used by download_drive_batch3.py and
+ingest_drive_batch3.py.
+
+Each entry: (drive_id, filename, category, subheading_or_None)
+"""
+
+MANIFEST = [
+    # Fault Finding
+    ("1EYa8kPGU_NN4KM_5-i6qbA0aW44mNgzK", "Onsite hot water repair - faulty element & terminal block.wmv", "Fault Finding", "Hot Water Fault"),
+    ("1EImFXGDqrKZlYRI9ERD2kbuVqiqFTTHa", "Hot Water Thermostat Fault.wmv", "Fault Finding", "Hot Water Fault"),
+    ("1SqZod_TdOO7TH9qC8yBUT1JmDcxsBHwE", "Hot Water Not Hot Enough.wmv", "Fault Finding", "Hot Water Fault"),
+    ("1p2Id57YA-f-5mj_KCo0VQtNY4BTh9Dq8", "Hot Water Fault.wmv", "Fault Finding", "Hot Water Fault"),
+    ("1b_ZBS4OcTPAM_XeomrVgnvKUNM_dbDXU", "TV Fault - Signal Issues.wmv", "Fault Finding", "TV"),
+    ("1dNUviKHdiLoG5_LlNZDNlAa8ivmJrQ4Q", "Safety switch fault explanation - Whiteboard.wmv", "Fault Finding", "Safety Switch Fault"),
+    ("1thyK2Khu-alW6vr_2cboLhspHlx2GxTq", "Safety switch fault.wmv", "Fault Finding", "Appliance Fault"),
+    ("1EZNuF3EZ0QfPzUNAJVD0w6_KSorGnw6e", "Safety switch & Appliance fault.wmv", "Fault Finding", "Appliance Fault"),
+    ("1bBQUhuJyC_UefktDQJFMUmUF04vibKTF", "Fault Finding A Tripping RCD.wmv", "Fault Finding", "Appliance Fault"),
+    ("1d3YeSQpJ0xHvxBgWRuPGNrr4c41suq_B", "Appliance fault.wmv", "Fault Finding", "Appliance Fault"),
+    ("1ordM8F7a9GVH34NL-q1-e4RBljeWLfR7", "Appliance Fault in home.wmv", "Fault Finding", "Appliance Fault"),
+    ("1qBTbynPaIyzoheYSORGk_437W8eEQ8b2", "Lighting Fault PART 2.wmv", "Fault Finding", "Light Fault"),
+    ("1Y7_KPLgtXd7w2tifbO9Ter5GtrN8g22h", "Lighting Fault PART 1.wmv", "Fault Finding", "Light Fault"),
+    ("12Vx_VfG86uS33jYBImFlcJMWGvOpgbs2", "Lighting Fault (Possums Chewed Cables).wmv", "Fault Finding", "Light Fault"),
+    ("13FsA19QBtdBMHWCGbJo5BwxlrK3MWkO_", "Splitting A Power Circuit To Locate IR Fault.wmv", "Fault Finding", "Power Faults"),
+    ("1Z8E_u1_wWWfWHIFq9YR6UdIbZnrYb0c-", "IR Power Fault Finding (Possums).wmv", "Fault Finding", "Power Faults"),
+    ("1KgccrGpBWWz2HOeZbS_bZShCsVIBAtWt", "IR Power Fault - You'll be surprised at what it was!.wmv", "Fault Finding", "Power Faults"),
+    ("1ls2Tytz8pbk_WKzmXhNlGXl-rit93N0F", "Fault Finding Weatherproof Power Point-Socket Outlet.wmv", "Fault Finding", "Power Faults"),
+    ("1glu1fkN9FIFvopSgajuLkS4piKAhHFKB", "Dead Short - Active Neutral Fault.wmv", "Fault Finding", "Power Faults"),
+
+    # Switchboards
+    ("1va66tLNZrQQ30_Trv5ubEsSaFPVLP-Zq", "Install 17 module sub-board - PART 2.wmv", "Switchboards", "Sheds"),
+    ("1kqTLrgh66kJ9XuiKx-3EVrGvKLRVQqU8", "Install 17 module sub-board - PART 1.wmv", "Switchboards", "Sheds"),
+    ("1naRmLLM06grk2y6OTOLlFJ2EOgyh1nXz", "Meterbox Door Extension.wmv", "Switchboards", "Meterbox Door Modification"),
+    ("1Nhg0ZhxWVorzvKwaeEtS_Z6hA4tpg5o9", "Power Industry Lock Meterbox Bracket.wmv", "Switchboards", "Power Industry Locks"),
+    ("1N2zJ60r0fpn0tRLLeEFejl5dsezoZKQy", "Install power industry padlock with no knockout bracket.wmv", "Switchboards", "Power Industry Locks"),
+    ("1cW1__XQjYfGGro5jswnR-aRTygW_0W89", "Install Power Industry Lock.wmv", "Switchboards", "Power Industry Locks"),
+    ("1pojn_y2GOhPl9ixTTP6A-nz2vM8_qX7l", "Install power industry lock on meter box.wmv", "Switchboards", "Power Industry Locks"),
+    ("16tehSGySUQyU5jSNHzVr-ppHns2JzRh2", "Set up temporary power in switchboard.wmv", "Switchboards", "Temporary Power"),
+    ("1RO1_dioclNrLGMJzkZCXGWhiEAq-1sWK", "Timer & Contactor.wmv", "Switchboards", "Timer & Contractor"),
+    ("128TDPz0H-DkGesRmx7M_rrmTQF21VECs", "M.E.N. Explanation.wmv", "Switchboards", "M.E.N."),
+    ("16_-SQJCeMOD7tpnvtsmEXhmul7I75LBU", "Fit off M.E.N in switch board.wmv", "Switchboards", "M.E.N."),
+    ("1FIfYoebC1QGdwXEmtRo_q3Joe9wCNusS", "Preparing Internal Board.wmv", "Switchboards", "Internal Switchboard"),
+    ("1mt83e89_62eI36cbIWwMkpEYZQ3ZJPW0", "Comparing internal switchboards.wmv", "Switchboards", "Internal Switchboard"),
+    ("13_F42HCqt_7o9NP9JhBZ5yMs90Qp5NbW", "Switchboard Upgrade and Re-mounting.wmv", "Switchboards", "Fuse Board Upgrades"),
+    ("1QfbWXb4Q-u9wgKxbn9RVh3duKUneOr5W", "Fuse Board Upgrade Site 2 (PART 3).wmv", "Switchboards", "Fuse Board Upgrades"),
+    ("1dulg1frm8gQWpKkQlsLgal9RK_7DqKpj", "Fuse Board Upgrade Site 2 (PART 2).wmv", "Switchboards", "Fuse Board Upgrades"),
+    ("1jlEVxpniyXKKz3-R_ansjlZ_In64qiRI", "Fuse Board Upgrade Site 2 (PART 1).wmv", "Switchboards", "Fuse Board Upgrades"),
+    ("1HpWTSah1rJOl_IesGePnpBZqdpSfG8p4", "Fuse board upgrade site 1 - PART 3.wmv", "Switchboards", "Fuse Board Upgrades"),
+    ("1lpPNdCzyriHKc-pM8wNePptZJLdXK_5q", "Fuse board upgrade site 1 - PART 2.wmv", "Switchboards", "Fuse Board Upgrades"),
+    ("1Wux1kWhvJoioHQPAT7KSnOS_UGfD1N_N", "Fuse board upgrade site 1 - PART 1.wmv", "Switchboards", "Fuse Board Upgrades"),
+    ("1-vIhuCE9usclsqHrKzOU6X5L0MUyb_9m", "Fuse Board Upgrade (Intermediate Skill Level Explanation).wmv", "Switchboards", "Fuse Board Upgrades"),
+    ("11j4zDxm3B0p_o0hvXMyJ11abkqJSE0le", "Fuse Board Site 3.wmv", "Switchboards", "Fuse Board Upgrades"),
+    ("1a06BfvFKkHphv28JcTMog2vvWs9_p3b8", "Upgrade circuit breakers to safety switches + earthing system ( PART 3).wmv", "Switchboards", "Dinrail Upgrade"),
+    ("1bLh67YUbHQgABjuLeK24rc4lKmn2MqxU", "Upgrade circuit breakers to safety switches + earthing system ( PART 2).wmv", "Switchboards", "Dinrail Upgrade"),
+    ("1dCtpVbE2SEqncHXQokSgDTUjCA-nNr5m", "Upgrade circuit breakers to safety switches + earthing system ( PART 1).wmv", "Switchboards", "Dinrail Upgrade"),
+    ("1-zXdSCX65O1qqQY1k3bITvHdlJVAAH0g", "Main Switch To Current Limiter.wmv", "Switchboards", "Dinrail Upgrade"),
+    ("1UXXwO1NyKS7k-sIIviXW9oG1W7u2N4k2", "Wire surge protector.wmv", "Switchboards", "Dinrail"),
+    ("1lYPz0UMLDKfX7NBeZxnJKnRUgTAuAK3x", "Wire 16 amp RCBO.wmv", "Switchboards", "Dinrail"),
+    ("1XS3e48vPpVzHIjRb3XCF2JYPF_pRkc-9", "Wire 16 amp circuit breaker.wmv", "Switchboards", "Dinrail"),
+    ("1_LC3pNK8cGAgCVJCq6ThlcxuPfy7whYI", "Terminate load cables into main switch using double screw connector - Method 1.wmv", "Switchboards", "Dinrail"),
+    ("1rbwLeHJ6sn3GhO5J-s-S7mZf1Y8oXeGU", "Terminate load cables into main switch using bus bar - Method 3.wmv", "Switchboards", "Dinrail"),
+    ("1hkHnS14ignjp6gh3zTfb_Lba9NziGS_i", "Terminate load cables into main switch using additional circuit breakers - Method 2.wmv", "Switchboards", "Dinrail"),
+    ("1J79fIB0vmySzNnZDCbWO5fXX87KW2vH4", "Rough in 3 Circuit breakers into double pole 40a RCD.wmv", "Switchboards", "Dinrail"),
+    ("1K_LIkaRpKXIss2hTTo9jR78YZLkat7xg", "Install and remove three pole circuit breaker.wmv", "Switchboards", "Dinrail"),
+    ("1uj7qdJQ1eanrRxf9s6zDZHQrVFNEpsN8", "Install and Remove Surge Protector on Dinrail.wmv", "Switchboards", "Dinrail"),
+    ("1kjKCoLyDiPtvGtiiiYgbneP-bD9SyNQo", "Install and remove single pole main switch on dinrail.wmv", "Switchboards", "Dinrail"),
+    ("1ehY6LI2zCaIIzF49gus9m3uB-T_mBimS", "Install and Remove Safety Switch Combo from Dinrail.wmv", "Switchboards", "Dinrail"),
+    ("1Z6Sq_zoebngxrOdX7tB9d-FILMA4UZGD", "Install and Remove Double Pole RCD on Dinrail.wmv", "Switchboards", "Dinrail"),
+    ("1NalqIK5-u1SrcnJWCQ2uOrlLD5fsd6-S", "Install and Remove Circuit Breaker from Dinrail.wmv", "Switchboards", "Dinrail"),
+    ("1AukMq7CJB5iaH_8mRoZ3L4v7SlwCCss7", "Where To Use RCD's.wmv", "Switchboards", "General"),
+    ("1h1JoZ_NUIyU2gDYfR2f1ouHrttFIZboq", "What Is A Fuse Board.wmv", "Switchboards", "General"),
+    ("10jzqmGdBPxjF0jG49Sh6BJB-cjpLWT4z", "Replace fuse wire.wmv", "Switchboards", "General"),
+    ("1s3_zvPB3j9uuW32Zw_bYYMvvOJANWe6v", "Fire Sealing Switchboard.wmv", "Switchboards", "General"),
+    ("1CYpeEf9RIYSjsvbOBwQDdJffU8cNEHUK", "Cable size to suit circuit breaker-RCBO.wmv", "Switchboards", "General"),
+
+    # Toyota
+    ("1_WN7krOyMjNXesfrnwa7IeheQjuRdn44", "Making conduit holder for roof PART 2.wmv", "Toyota", None),
+    ("118rjVKELQhrFoSOJJ01Qf5YZTK2opsGl", "Making conduit holder for roof PART 1.wmv", "Toyota", None),
+    ("1GRHUOlqk-zU2_DclAZdgzgaGHdLRvQeR", "Ladder strap system.wmv", "Toyota", None),
+    ("1FotEHj5vf30aChssoRWe8PUbjyqFaePs", "Installing Rhino Rack Ladder Locks.wmv", "Toyota", None),
+
+    # Generator
+    ("1jmt8ebzfMj9Ws0HrUewmpzHKWZCwHrt6", "Wiring generator change over switch (Part 2).wmv", "Generator", None),
+    ("1KHRhTMuqFQKgiO0vmqW1HVbVCqPLvtrA", "Wiring generator change over switch (Part 1).wmv", "Generator", None),
+    ("1SsKJyBiaVgTyZ41Vs9z0w0Hurx9DPbJQ", "Installing Generator Inlet Part 7 Generator.wmv", "Generator", None),
+    ("1jsB6wHB2qGJqaIlEEYp9qlzq1HNRiusE", "Installing Generator Inlet Part 6 Labelling & Testing.wmv", "Generator", None),
+    ("1UDTyVZLjpR-qFkfpk5F7PtXxX7ulBrAq", "Installing Generator Inlet Part 5 Line Side RCBOs.wmv", "Generator", None),
+    ("1gsc1YR45mogX88GV2L3PBWd4tnBDTI04", "Installing Generator Inlet Part 4 Inlet.wmv", "Generator", None),
+    ("1lp-_YYWFoWDSb8Ag25YM9YYZED-QQzQS", "Installing Generator Inlet Part 3 RCBO's.wmv", "Generator", None),
+    ("1yKeRUI5xq7Ce9xxjhBN3NEDzfsCgeLn8", "Installing Generator Inlet Part 2 Installing Board.wmv", "Generator", None),
+    ("1SRKPevEXraXwqGebeGaFHFTMByv7VtcQ", "Installing Generator Inlet Part 1 Testing.wmv", "Generator", None),
+    ("1WFfwZHy925W6nKvKTaBCzbvE79oBy3X_", "Install and fit off 32amp round pin inlet.wmv", "Generator", None),
+
+    # 3 Phase
+    ("1wWmEM7_tEykG90zI8i8dRNtGsp6pnCO6", "Wire a 3 phase 5 pin outlet.wmv", "3 Phase", None),
+    ("1VjiBJ5l5Sn597IjvFVfBlhEr60LbUZ9b", "Upgrade Consumers Mains From Single Phase To 3 Phase.wmv", "3 Phase", None),
+    ("1_V_YUz8TAqvSJXN_M_MfsCfQuVqTd4sY", "Testing a 3 phase suspended outlet.wmv", "3 Phase", None),
+    ("1OV07-hBSNo-lxucMIAzZDIad1ifstRiX", "Test additional 3 Phase RCBO for suspended outlet.wmv", "3 Phase", None),
+    ("1q6bonmU3NlUyKIjEEMDE9kgutVnaLer3", "Suspend and Wire 3 Phase outlet.wmv", "3 Phase", None),
+    ("1UPZCWF9wdVVpLZ9RR086JOrDMPnsh3y8", "Single Phase To 3 Phase Preparation.wmv", "3 Phase", None),
+    ("1PZ7mJaLSixrDAEmdoDIWfNeBecYypVwO", "Single phase to 3 phase overhead upgrade.wmv", "3 Phase", None),
+    ("1YTO1AkEBg4cU3InqmVVlpZwcxLE9YDTp", "Single Phase To 3 Phase Job Preparation Part 2.wmv", "3 Phase", None),
+    ("1MNMcvoZf1oH8oS0WfcT-GYTWhtzLkaot", "Install additional 20a RCBO for suspended outlet.wmv", "3 Phase", None),
+    ("1Lup-Et-cV6NuFfklXfNnU7cU8nxIiP0n", "How to test a 3 phase circuit breaker.wmv", "3 Phase", None),
+    ("1oHYCTFzzwE-qQOuQIMN1cuticSHBtr4P", "Earth continuity test on 3 phase suspended outlet.wmv", "3 Phase", None),
+
+    # Lighting > LED Down Lights
+    ("19wBWyU-qmIeBCl6QOit5bF8UMlkAFWhP", "Use hole saw to cut out each downlight hole.wmv", "Lighting", "LED Down Lights"),
+    ("1BFCIreHYvQJejjJYA5k-woKOKs6WPj5q", "Replace LED Down Light.wmv", "Lighting", "LED Down Lights"),
+    ("1B4dXm8mO7dbb0ByiLr9EFF95ImrAxNuA", "Marking out downlights in a kitchen.wmv", "Lighting", "LED Down Lights"),
+    ("1hGiaCjsig9STesXm1g23WZh9hJpcH9e3", "Kitchen downlight fit off.wmv", "Lighting", "LED Down Lights"),
+    ("1011pscmGNxTcI3C8SunfjlC8GYus5l_1", "Down Light Installation - Double Storey Home - PART 3.wmv", "Lighting", "LED Down Lights"),
+    ("1x-gRBceYddLG7vcuTwFICIwmmKBWzzfB", "Down Light Installation - Double Storey Home - PART 2.wmv", "Lighting", "LED Down Lights"),
+    ("1Wu9mvJWYzVbCMRtyKWbyOkLB6nSpCPEc", "Down Light Installation - Double Storey Home - PART 1.wmv", "Lighting", "LED Down Lights"),
+    ("1CRs2Q6orP40HM481x2w0lu0iglu7HSN_", "Check and clear each downlight location in the roof.wmv", "Lighting", "LED Down Lights"),
+    ("12UZTyA5sBOAM2KcSvRDBXbTHOS97MV0m", "Batten Holders To Down Lights (Holesaw method).wmv", "Lighting", "LED Down Lights"),
+    ("1g9ff89plLT_EKI6hDsAEcg09QGQVWFUy", "70mm To 90mm Downlight Replacements.wmv", "Lighting", "LED Down Lights"),
+]
+
+if __name__ == "__main__":
+    print(f"{len(MANIFEST)} videos in manifest")

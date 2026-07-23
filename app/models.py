@@ -70,6 +70,7 @@ class Video(db.Model):
     title = db.Column(db.String(255), nullable=False)
     subheading = db.Column(db.String(120), nullable=True)  # groups videos within a category, e.g. a Drive subfolder name
     sort_order = db.Column(db.Integer, default=0)  # lower shows first within a category; ties break by title
+    is_priority = db.Column(db.Boolean, default=False, nullable=False)  # pinned in "Watch These First" on the catalogue
     storage_key = db.Column(db.String(500), nullable=True)  # set once ingested (hosted videos)
     youtube_id = db.Column(db.String(20), nullable=True)  # set instead of storage_key for linked YouTube videos
     source_channel = db.Column(db.String(120), nullable=True)  # attribution for linked videos, e.g. "Electrical How To"
