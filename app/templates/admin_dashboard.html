@@ -3,10 +3,36 @@
 {% block content %}
 <h1>Staff Progress Dashboard</h1>
 
-{% if not staff %}
+{% if all_staff %}
+<form method="get" class="dashboard-filters" action="{{ url_for('admin.dashboard') }}">
+  <label>
+    Staff
+    <select name="staff" onchange="this.form.submit()">
+      <option value="all" {{ 'selected' if not selected_staff_id }}>All staff</option>
+      {% for u in all_staff %}
+        <option value="{{ u.id }}" {{ 'selected' if selected_staff_id == u.id }}>{{ u.name }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>
+    Videos
+    <select name="view" onchange="this.form.submit()">
+      <option value="all" {{ 'selected' if view != 'watched' }}>All videos</option>
+      <option value="watched" {{ 'selected' if view == 'watched' }}>Watched only</option>
+    </select>
+  </label>
+  <noscript><button type="submit">Apply</button></noscript>
+</form>
+{% endif %}
+
+{% if not all_staff %}
   <p class="empty-state">No staff accounts yet. <a href="{{ url_for('admin.staff') }}">Add one</a>.</p>
 {% elif not videos %}
-  <p class="empty-state">No videos have been ingested yet.</p>
+  {% if view == 'watched' %}
+    <p class="empty-state">No watched videos{{ ' for this staff member' if selected_staff_id }} yet.</p>
+  {% else %}
+    <p class="empty-state">No videos have been ingested yet.</p>
+  {% endif %}
 {% else %}
 <div class="table-scroll">
 <table class="matrix">
@@ -22,7 +48,7 @@
   <tbody>
     {% for user in staff %}
     <tr>
-      <td class="staff-name">{{ user.name }}</td>
+      <td class="staff-name"><a href="{{ url_for('admin.staff_quiz', user_id=user.id) }}">{{ user.name }}</a></td>
       <td>{{ quiz_scores.get(user.id, "—") }}</td>
       {% for video in videos %}
         {% set p = progress_lookup.get((user.id, video.id)) %}

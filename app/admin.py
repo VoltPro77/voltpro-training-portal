@@ -54,9 +54,23 @@ def _latest_attempts_by_staff():
 @bp.route("/")
 @admin_required
 def dashboard():
-    staff = User.query.filter_by(role="staff").order_by(User.name).all()
+    all_staff = User.query.filter_by(role="staff").order_by(User.name).all()
+
+    # Filters: which staff row(s) to show, and whether to show all videos or only watched.
+    staff_param = request.args.get("staff", "all")
+    view = request.args.get("view", "all")  # "all" | "watched"
+
+    if staff_param.isdigit() and any(u.id == int(staff_param) for u in all_staff):
+        selected_staff_id = int(staff_param)
+        staff = [u for u in all_staff if u.id == selected_staff_id]
+    else:
+        selected_staff_id = None
+        staff = all_staff
+
     videos = (
-        Video.query.filter(Video.storage_key.isnot(None))
+        Video.query.filter(
+            db.or_(Video.storage_key.isnot(None), Video.youtube_id.isnot(None))
+        )
         .order_by(Video.category_id, Video.sort_order, Video.title)
         .all()
     )
@@ -64,6 +78,18 @@ def dashboard():
     progress_lookup = {
         (p.user_id, p.video_id): p for p in WatchProgress.query.all()
     }
+
+    if view == "watched":
+        shown_user_ids = {u.id for u in staff}
+
+        def watched_by_shown(video):
+            for uid in shown_user_ids:
+                p = progress_lookup.get((uid, video.id))
+                if p and (p.completed_at or (p.percent_complete or 0) > 0):
+                    return True
+            return False
+
+        videos = [v for v in videos if watched_by_shown(v)]
 
     # per-user quiz average, based on their most recent attempt per question
     quiz_scores = {}
@@ -91,6 +117,9 @@ def dashboard():
         videos=videos,
         progress_lookup=progress_lookup,
         quiz_scores=quiz_scores,
+        all_staff=all_staff,
+        selected_staff_id=selected_staff_id,
+        view=view,
     )
 
 

@@ -490,6 +490,35 @@ video#player {
 
 /* ---------- Admin ---------- */
 
+.dashboard-filters {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.dashboard-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+.dashboard-filters select {
+  padding: 0.6rem 0.85rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  min-width: 180px;
+}
+.dashboard-filters select:focus { outline: none; border-color: var(--orange); }
+
 .table-scroll { overflow-x: auto; border-radius: var(--radius); box-shadow: var(--shadow-sm); }
 table.matrix, table.simple-table {
   border-collapse: collapse;
